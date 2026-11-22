@@ -10,7 +10,7 @@ Puoi anche incollarlo solo nelle istruzioni di un Progetto, se vuoi FreeToken so
 ## La versione completa: la skill FreeToken
 La skill aggiunge tutte le parole magiche (`nota`, `quanto`, `comprimi`, `dieta`, `pagella`, `preventivo`, `regole`).
 
-1. Comprimi in uno zip la cartella `freetoken` che trovi qui dentro (oppure scarica `freetoken-skill.zip` dalla pagina delle release).
+1. Scarica la skill già pronta: **[freetoken-skill.zip](https://github.com/Giandoms/FreeToken/raw/main/scarica/freetoken-skill.zip)**. Dentro c'è anche il calcolatore.
 2. In Claude: **Personalizza (Customize) → Skill**, poi il pulsante **+**, **Crea skill** e **Carica una skill**. Scegli lo zip.
    Serve che sia attiva l'esecuzione del codice (Impostazioni → Funzionalità).
 3. Attivala. Funziona nelle chat, nei Progetti e in Cowork.

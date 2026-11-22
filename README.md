@@ -31,7 +31,7 @@ Se va tutto bene, non dice niente. Un guardiano dei consumi che parla troppo sar
 | Dove lo usi | Cosa fai | Guida |
 |---|---|---|
 | **ChatGPT** | Copi `INCOLLA-QUESTO.txt` nelle Istruzioni personalizzate | [chatgpt/COME-SI-USA.md](chatgpt/COME-SI-USA.md) |
-| **Claude** (chat, app, Cowork) | Copi `INCOLLA-QUESTO.txt` nelle tue Istruzioni, e se vuoi carichi la skill | [claude/COME-SI-USA.md](claude/COME-SI-USA.md) |
+| **Claude** (chat, app, Cowork) | Copi `INCOLLA-QUESTO.txt` nelle tue Istruzioni, e se vuoi carichi la [skill già pronta](https://github.com/Giandoms/FreeToken/raw/main/scarica/freetoken-skill.zip) | [claude/COME-SI-USA.md](claude/COME-SI-USA.md) |
 | **Claude Code** | Lanci un comando e fa tutto da solo, con i numeri veri | [più sotto](#claude-code-il-pilota-automatico) |
 | **Gemini e altre** | Copi `INCOLLA-QUESTO.txt` nelle istruzioni della Gem o dell'assistente | |
 
@@ -174,6 +174,7 @@ freetoken/
 ├── chatgpt/             il GPT completo e la guida
 ├── claude/              la skill per chat, app e Cowork, e la guida
 ├── claude-code/         il pilota automatico
+├── scarica/             la skill pronta da caricare in Claude
 ├── strumenti/           il calcolatore gratuito
 ├── assets/              le immagini di questa pagina
 └── tests/               il collaudo del pilota automatico
