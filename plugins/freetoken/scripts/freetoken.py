@@ -8,6 +8,7 @@ Un solo script per tutto:
   python3 freetoken.py audit         <- lavori automatici che girano a vuoto
   python3 freetoken.py pagella [dir] <- check-up del progetto (CLAUDE.md, connettori, cartelle pesanti)
   python3 freetoken.py misura FILE   <- quanto pesa un file nella chat
+  python3 freetoken.py modello       <- quale modello conviene e quanti euro risparmi
   python3 freetoken.py calcolatore   <- apre il calcolatore nel browser
 
 Solo libreria standard di Python 3.8+. Nessun dato esce dal tuo computer.
@@ -41,7 +42,12 @@ PREDEFINITI = {
     "moltiplicatore_scrittura_cache": 1.25,
     "moltiplicatore_lettura_cache": 0.1,
     "moltiplicatore_output": 5.0,
-    "prezzo_input_per_milione_usd": 5.0, # imposta il prezzo del tuo modello
+    "prezzo_input_per_milione_usd": 4.0, # usato se il modello non si riconosce (Opus 5.5)
+    "cambio_usd_eur": 0.90,             # 1 dollaro in euro (Banca d'Italia, novembre 2026)
+    "consiglio_modello": True,          # suggerisce il modello adatto al lavoro
+    "stima_richieste_sessione": 25,     # base dei risparmi in euro sul modello
+    "stima_ingresso_per_richiesta": 10000,  # token equivalenti a prezzo pieno per richiesta
+    "stima_uscita_per_richiesta": 1500,
     "cartelle_pesanti": ["node_modules", "dist", "build", ".next", "vendor", ".venv",
                           "__pycache__", "coverage", ".git/"],
     "file_pesanti": [r"\.lock$", r"package-lock\.json$", r"\.min\.(js|css)$", r"\.map$",
@@ -59,7 +65,9 @@ REGOLE_SEMPRE_ATTIVE = (
     "Avvisa anche se l'utente incolla testi enormi, chiede di riscrivere file interi per piccole modifiche, "
     "chiede di cercare senza dire dove, o crea attività ripetute (devono partire controllando se c'è qualcosa di nuovo). "
     "Un avviso al massimo per risposta, nessuno se va tutto bene, linguaggio semplice. "
-    "Per lavorare leggero: cerca prima di leggere file grandi, leggi solo le righe utili, fai modifiche mirate."
+    "Per lavorare leggero: cerca prima di leggere file grandi, leggi solo le righe utili, fai modifiche mirate. "
+    "Se il lavoro è semplice e il modello è potente, o il contrario, suggerisci all'inizio il modello adatto "
+    "con il risparmio stimato in euro."
 )
 
 RISPARMI = {
@@ -111,8 +119,106 @@ def k(n):
     return str(n)
 
 
-def usd(equivalenti):
-    return equivalenti / 1_000_000 * CFG["prezzo_input_per_milione_usd"]
+# Listino API in dollari per milione di token (ingresso, uscita), novembre 2026.
+LISTINO = {
+    "opus": (4.0, 20.0, "Claude Opus"), "sonnet": (2.0, 10.0, "Claude Sonnet"),
+    "haiku": (0.10, 0.50, "Claude Haiku"), "astra": (8.0, 40.0, "GPT Astra"),
+    "sol": (2.0, 10.0, "GPT Sol"), "terra": (1.0, 5.0, "GPT Terra"), "luna": (0.10, 0.50, "GPT Luna"),
+}
+PIU_LEGGERO = {"opus": "sonnet", "astra": "sol"}
+PIU_POTENTE = {"haiku": "sonnet", "sonnet": "opus", "luna": "sol", "terra": "sol", "sol": "astra"}
+MODELLO = {"famiglia": None}   # il modello della sessione, quando lo conosciamo
+
+
+def famiglia(modello):
+    if isinstance(modello, dict):
+        modello = modello.get("id") or modello.get("display_name") or ""
+    m = str(modello or "").lower()
+    for nome in LISTINO:
+        if nome in m:
+            return nome
+    return None
+
+
+def eur(equivalenti):
+    """Euro dei token equivalenti (a prezzo d'ingresso) col modello della sessione."""
+    prezzo = LISTINO[MODELLO["famiglia"]][0] if MODELLO["famiglia"] else CFG["prezzo_input_per_milione_usd"]
+    return equivalenti / 1_000_000 * prezzo * CFG["cambio_usd_eur"]
+
+
+def euro(valore):
+    if valore < 0.01:
+        return "meno di 1 centesimo"
+    return f"{valore:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def costo_sessione(fam, richieste=None):
+    """Euro di una sessione tipica con quel modello (stima a listino API)."""
+    pi, po, _ = LISTINO[fam]
+    n = richieste or CFG["stima_richieste_sessione"]
+    return n * (CFG["stima_ingresso_per_richiesta"] * pi + CFG["stima_uscita_per_richiesta"] * po) \
+        / 1_000_000 * CFG["cambio_usd_eur"]
+
+
+LAVORO_SEMPLICE = re.compile(
+    r"\b(riscriv\w*|tradu\w*|riassum\w*|sintetizz\w*|riassunto|refus\w*|ortografi\w*|formatt\w*|"
+    r"impagin\w*|e-?mail|mail|elenco puntato|titol\w*|rinomin\w*|accorcia\w*|semplifica\w*|"
+    r"rendi\s+più\s+(chiaro|breve|formale)|messaggio|didascali\w*|sottotitol\w*)\b", re.I)
+LAVORO_DIFFICILE = re.compile(
+    r"(architettur\w*|strategi\w*|progett\w+ (il|la|un|una)|refactor\w*|rifattorizz\w*|migra\w*|"
+    r"debug\w*|bug\b|analizz\w+ (il|la|i|le|tutt)|contratt\w*|business plan|piano (aziendale|di)|"
+    r"algoritm\w*|vulnerabil\w*|sicurezza|più file|tutto il progetto|dimostra\w*|decision\w*)", re.I)
+TENTATIVO_FALLITO = re.compile(
+    r"(ancora (non|sbagliat|lo stesso)|di nuovo (sbagliat|non)|non funziona (ancora|più)|"
+    r"stesso errore|non hai capito|riprova|è sbagliato)", re.I)
+
+
+def consiglio_modello(p, st, sit):
+    """Suggerisce il modello adatto al lavoro, con il risparmio in euro. Un consiglio per sessione."""
+    fam = MODELLO["famiglia"]
+    if not CFG["consiglio_modello"] or not fam or st.get("consiglio_modello"):
+        return None
+    if TENTATIVO_FALLITO.search(p):
+        st["fallimenti"] = st.get("fallimenti", 0) + 1
+    inizio = st.get("turni", 0) <= 3 and (sit.get("contesto") or 0) < 40000
+    semplice = len(p) < 1500 and LAVORO_SEMPLICE.search(p) and not LAVORO_DIFFICILE.search(p)
+    difficile = LAVORO_DIFFICILE.search(p) and not semplice
+    nome = LISTINO[fam][2]
+
+    if inizio and semplice and fam in PIU_LEGGERO:
+        alt = PIU_LEGGERO[fam]
+        risparmio = costo_sessione(fam) - costo_sessione(alt)
+        extra = ""
+        if fam == "opus":
+            extra = (f" Se è un lavoro ripetitivo, con Haiku il risparmio sale a circa "
+                     f"{euro(costo_sessione(fam) - costo_sessione('haiku'))}.")
+        st["consiglio_modello"] = "leggero"
+        return (f"🟡 Per questo basta il modello più leggero.\n"
+                f"   Perché: {nome} costa circa {round(LISTINO[fam][0] / LISTINO[alt][0])} volte "
+                f"{LISTINO[alt][2]} e per riscrivere, tradurre o riassumere non serve tanta potenza.\n"
+                f"   Cosa fare: apri il lavoro con /model {alt} (adesso, non a metà chat), oppure passalo "
+                f"a un subagent con model: {alt}.{extra}\n"
+                f"   Risparmi: circa {euro(risparmio)} ogni {CFG['stima_richieste_sessione']} richieste "
+                f"(listino API; in abbonamento i limiti durano di più).")
+
+    if fam in PIU_POTENTE and ((inizio and difficile) or st.get("fallimenti", 0) >= 2):
+        alt = PIU_POTENTE[fam]
+        piu = costo_sessione(alt) - costo_sessione(fam)
+        giro = (sit.get("contesto") or CFG["stima_ingresso_per_richiesta"]) * CFG["moltiplicatore_lettura_cache"] \
+            + CFG["stima_ingresso_per_richiesta"]
+        perche = ("hai già detto due volte che il risultato è sbagliato: ogni nuovo tentativo rilegge la chat"
+                  if st.get("fallimenti", 0) >= 2 else
+                  "è un lavoro con tanti passaggi e decisioni: un modello leggero rischia due o tre giri di correzione")
+        st["consiglio_modello"] = "potente"
+        return (f"🟠 Qui serve il modello più potente.\n"
+                f"   Perché: {perche}.\n"
+                + (f"   Cosa fare: /model {alt} adesso, finché la chat è corta.\n"
+                   if (sit.get("contesto") or 0) < 20000 else
+                   f"   Cosa fare: /nota, /clear, poi /model {alt} e /riparti (cambiare modello a metà chat "
+                   f"la fa rileggere tutta).\n") +
+                f"   Conto onesto: in euro spendi circa {euro(piu)} in più ogni {CFG['stima_richieste_sessione']} "
+                f"richieste; in token risparmi i giri a vuoto (circa {k(giro)} token l'uno).")
+    return None
 
 
 def peso(token, richieste_dopo):
@@ -197,13 +303,16 @@ def ultimo_uso_da_transcript(percorso):
                     quando = datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
                 except Exception:
                     pass
-            return {"contesto": ctx, "ultima_risposta": quando}
+            return {"contesto": ctx, "ultima_risposta": quando,
+                    "modello": (e.get("message") or {}).get("model")}
     return None
 
 
 def situazione(dati, st):
     """Contesto, scadenza cache e token da riscrivere, dalla barra di stato o dal transcript."""
     s = st.get("sensore") or {}
+    MODELLO["famiglia"] = famiglia(s.get("modello")) or famiglia(dati.get("model")) or \
+        famiglia(st.get("modello")) or MODELLO["famiglia"]
     adesso = time.time()
     if s and adesso - s.get("aggiornato", 0) < 6 * 3600:
         pc = s.get("prompt_cache") or {}
@@ -216,6 +325,7 @@ def situazione(dati, st):
             "fonte": "barra",
         }
     u = ultimo_uso_da_transcript(dati.get("transcript_path", "")) or {}
+    MODELLO["famiglia"] = MODELLO["famiglia"] or famiglia(u.get("modello"))
     scade = (u["ultima_risposta"] + 300) if u.get("ultima_risposta") else None  # ipotesi: cache 5 minuti
     return {"contesto": u.get("contesto", 0), "finestra": CFG["finestra_contesto"],
             "scade": scade, "riscrittura": u.get("contesto", 0), "richieste": None,
@@ -276,7 +386,7 @@ def evento_prompt(d):
                      else "salvalo in un file e chiedi di leggere solo la parte che ti serve.")
         testo = (f"Stai incollando {cosa} di {num(righe)} righe.\n"
                  f"   Perché: resterebbe nella chat fino alla fine e lo pagheresti a ogni risposta "
-                 f"(circa {k(costo)} token, {usd(costo):.2f} $).\n"
+                 f"(circa {k(costo)} token, {euro(eur(costo))}).\n"
                  f"   Cosa fare: {consiglio}\n"
                  f"   Ti serve davvero tutto? Rimandalo iniziando con {CFG['prefisso_forza']}")
         if rigida:
@@ -296,7 +406,7 @@ def evento_prompt(d):
         costo = riscr * CFG["moltiplicatore_scrittura_cache"]
         testo = (f"Hai fatto una pausa e lo sconto sulla chat è scaduto ({minuti} min fa).\n"
                  f"   Perché: finché lavori la chat costa circa un decimo; dopo la pausa questo messaggio "
-                 f"la rilegge tutta a prezzo pieno (circa {k(riscr)} token, {usd(costo):.2f} $).\n"
+                 f"la rilegge tutta a prezzo pieno (circa {k(riscr)} token, {euro(eur(costo))}).\n"
                  f"   Cosa fare: /clear e poi /riparti (riparti dalla nota, quasi gratis). "
                  f"Nessuna nota? Dopo /clear scrivi tu in 5 righe dove eri.\n"
                  f"   Vuoi continuare qui lo stesso? Rimanda il messaggio.")
@@ -352,6 +462,12 @@ def evento_prompt(d):
                  r"non so dove)\b", p, re.I) and not re.search(r"[\w/-]+\.\w{1,5}", p):
         avvisi.append("Senza dire dove, Claude deve frugare in tutto il progetto e la chat si riempie.\n"
                       "   Cosa fare: se lo sai, indica il file e la riga (es. src/app.py riga 120).")
+
+    # 7. Il modello giusto per il lavoro (una volta per sessione, con il risparmio in euro)
+    if not avvisi:
+        c = consiglio_modello(p, st, sit)
+        if c:
+            avvisi.append(c)
 
     scrivi_stato(sid, st)
     avvisa(avvisi)
@@ -445,6 +561,10 @@ def evento_inizio(d):
     fonte = d.get("source", "")
     cwd = d.get("cwd", os.getcwd())
     avvisi = []
+    if famiglia(d.get("model")):
+        st0 = leggi_stato(sid)
+        st0["modello"] = d.get("model") if isinstance(d.get("model"), str) else (d.get("model") or {}).get("id")
+        scrivi_stato(sid, st0)
 
     # Ripresa di una sessione con cache scaduta
     if fonte in ("resume", "fork") and d.get("prompt_cache_likely_expired"):
@@ -452,7 +572,8 @@ def evento_inizio(d):
         if ctx >= CFG["cache_fredda_soglia_token"]:
             minuti = int((d.get("seconds_since_last_response") or 0) / 60)
             costo = d.get("estimated_cache_write_usd")
-            costo_txt = f"~{costo:.2f} $" if isinstance(costo, (int, float)) else f"~{usd(ctx*1.25):.2f} $"
+            costo_txt = (f"~{euro(costo * CFG['cambio_usd_eur'])}" if isinstance(costo, (int, float))
+                         else f"~{euro(eur(ctx * 1.25))}")
             registra(sid, "ripresa_fredda", ctx, ctx * CFG["moltiplicatore_scrittura_cache"], fonte)
             avvisi.append(f"Stai riprendendo una sessione da ~{k(ctx)} token ferma da {minuti} min: "
                           f"il primo messaggio la riscrive tutta ({costo_txt}). Se c'è la nota: /clear e /riparti.")
@@ -511,8 +632,9 @@ def evento_cambio_modello(d):
     ctx = sit.get("contesto") or 0
     if ctx >= 20000:
         registra(sid, "cambio_modello", ctx, ctx * CFG["moltiplicatore_scrittura_cache"], "")
+        situazione(d, leggi_stato(sid))
         avvisa([f"La cache vale per un solo modello: cambiandolo adesso il prossimo messaggio riscrive "
-                f"~{k(ctx)} token. Meglio: tieni il modello e passa i lavori semplici a un subagent "
+                f"~{k(ctx)} token (circa {euro(eur(ctx * CFG['moltiplicatore_scrittura_cache']))}). Meglio: tieni il modello e passa i lavori semplici a un subagent "
                 f"con il modello piccolo."])
     esci()
 
@@ -641,8 +763,8 @@ def cmd_conto(args):
         if vv:
             e = sum(v["equivalenti"] for v in vv)
             tot += e
-            print(f"  {et:<38} {len(vv):>4} volte   {k(e):>7}   ≈ {usd(e):6.2f} $")
-    print(f"  {'TOTALE':<38} {'':>10}   {k(tot):>7}   ≈ {usd(tot):6.2f} $")
+            print(f"  {et:<38} {len(vv):>4} volte   {k(e):>7}   ≈ {euro(eur(e)):>10}")
+    print(f"  {'TOTALE':<38} {'':>10}   {k(tot):>7}   ≈ {euro(eur(tot)):>10}")
     misurati = sum(1 for v in voci if v.get("misurato"))
     if misurati:
         print(f"  ({misurati} voci ricalcolate sulle richieste reali delle sessioni)")
@@ -653,7 +775,7 @@ def cmd_conto(args):
             e = sum(v["equivalenti"] for v in vv)
             sp_tot += e
             classifica.append((e, et, len(vv)))
-            print(f"  {et:<38} {len(vv):>4} volte   {k(e):>7}   ≈ {usd(e):6.2f} $")
+            print(f"  {et:<38} {len(vv):>4} volte   {k(e):>7}   ≈ {euro(eur(e)):>10}")
     if not classifica:
         print("  nessuno. Bel lavoro.")
     consigli = {
@@ -667,8 +789,8 @@ def cmd_conto(args):
         print("\nLE TUE ABITUDINI PIÙ CARE")
         for i, (e, et, n) in enumerate(sorted(classifica, reverse=True)[:3], 1):
             print(f"  {i}. {et}: {consigli.get(et, '')}")
-    print(f"\nPrezzo usato: {CFG['prezzo_input_per_milione_usd']} $ per milione di token in ingresso "
-          f"(cambialo in {DATI / 'config.json'}).\n")
+    print(f"\nPrezzo usato: {CFG['prezzo_input_per_milione_usd']} dollari per milione di token in ingresso, "
+          f"cambio {CFG['cambio_usd_eur']} € per dollaro (cambiali in {DATI / 'config.json'}).\n")
 
 
 def testo_messaggio(m):
@@ -735,9 +857,9 @@ def cmd_audit(args):
         print("Nessun lavoro ripetuto almeno 5 volte nelle sessioni locali di Claude Code.\n"
               "Nota: le attività programmate nel cloud non lasciano file qui; controlla il loro storico.\n")
         return
-    print(f"{'giri':>5} {'a vuoto':>8} {'token eq.':>10} {'≈ $':>8}  lavoro")
+    print(f"{'giri':>5} {'a vuoto':>8} {'token eq.':>10} {'≈ €':>10}  lavoro")
     for g in ripetuti[:15]:
-        print(f"{g['giri']:>5} {g['vuoti']:>8} {k(g['eq']):>10} {usd(g['eq']):>8.2f}  {g['esempio']}")
+        print(f"{g['giri']:>5} {g['vuoti']:>8} {k(g['eq']):>10} {euro(eur(g['eq'])):>10}  {g['esempio']}")
     peggiore = max(ripetuti, key=lambda g: g["vuoti"])
     if peggiore["vuoti"]:
         quota = peggiore["eq"] * peggiore["vuoti"] / peggiore["giri"]
@@ -766,7 +888,27 @@ def cmd_misura(args):
     t = tok(testo)
     e = peso(t, n)
     print(f"~{num(t)} token. Tenuto nella chat per {n} richieste: ~{num(e)} token equivalenti "
-          f"(≈ {usd(e):.2f} $).")
+          f"(≈ {euro(eur(e))}).")
+
+
+def cmd_modello(args):
+    """Listino in euro e risparmio tra modelli su una sessione tipica."""
+    n = int(args[0]) if args and args[0].isdigit() else CFG["stima_richieste_sessione"]
+    print(f"\n🪙 FREETOKEN · quale modello conviene (listino API, novembre 2026, in euro)\n")
+    print(f"  {'modello':<15} {'ingresso':>9} {'uscita':>8}   sessione da {n} richieste")
+    for fam, (pi, po, nome) in LISTINO.items():
+        c = CFG["cambio_usd_eur"]
+        print(f"  {nome:<15} {euro(pi * c):>9} {euro(po * c):>8}   {euro(costo_sessione(fam, n)):>10}")
+    print("  (prezzi per milione di token)\n")
+    for grande, piccolo in (("opus", "sonnet"), ("opus", "haiku"), ("astra", "sol"), ("astra", "terra")):
+        d = costo_sessione(grande, n) - costo_sessione(piccolo, n)
+        print(f"  {LISTINO[grande][2]} → {LISTINO[piccolo][2]}: risparmi circa {euro(d)} a sessione")
+    print("\nQuando scendere: riscrivere, tradurre, riassumere, formattare, mail, lavori ripetitivi.\n"
+          "Quando salire: strategia, codice su più file, analisi lunghe, dopo due tentativi falliti.\n"
+          "Quando cambiare: all'inizio o dopo /nota e /clear, mai a metà di una chat lunga.\n"
+          f"Base del calcolo: {num(CFG['stima_ingresso_per_richiesta'])} token in ingresso e "
+          f"{num(CFG['stima_uscita_per_richiesta'])} in uscita per richiesta. In abbonamento non paghi "
+          f"in euro: risparmi limiti.\n")
 
 
 def cmd_calcolatore(args):
@@ -784,7 +926,7 @@ def main():
         print(__doc__)
         return
     {"hook": lambda _a: hook(), "conto": cmd_conto, "audit": cmd_audit,
-     "pagella": cmd_pagella, "misura": cmd_misura, "calcolatore": cmd_calcolatore}.get(a[0], lambda _a: print(__doc__))(a[1:])
+     "pagella": cmd_pagella, "misura": cmd_misura, "modello": cmd_modello, "calcolatore": cmd_calcolatore}.get(a[0], lambda _a: print(__doc__))(a[1:])
 
 
 if __name__ == "__main__":

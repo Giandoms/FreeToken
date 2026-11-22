@@ -119,11 +119,13 @@ La modalità di ragionamento lungo produce migliaia di token di pensiero. Per ri
 
 ## Parte 4. Quale modello e come organizzarsi
 
-### 18. Il grande decide, il piccolo esegue [CC] [C] [G]
+### 18. Il modello giusto per il lavoro [CC] [C] [G] 🪙
 Il modello più economico che sbaglia e ti fa rifare tre volte costa più del grande.
 - **Dopo:** il grande per il piano e le decisioni, il piccolo per eseguire lavori chiari e ripetitivi.
 - **Il controcorrente:** non cambiare modello a metà sessione. La cache vale per un solo modello: cambiandolo, il messaggio dopo rilegge tutto a prezzo pieno. In Claude Code tieni il grande nella sessione e passa i lavori semplici a un subagent con `model: haiku` nel suo file.
-- 🪙 Ti avvisiamo prima del cambio di modello.
+- **Esempio in euro (listino API, novembre 2026, sessione da 25 richieste):** Opus circa 1,57 €, Sonnet circa 0,79 €, Haiku circa 4 centesimi. Riscrivere mail per una settimana con Opus invece che con Sonnet: circa 0,80 € buttati a sessione. Su ChatGPT, Astra contro Sol: circa 2,40 € a sessione.
+- **Il contrario vale uguale:** una strategia o un codice su più file fatti con il modello leggero, rifatti tre volte, costano più token del modello potente usato una volta sola.
+- 🪙 FreeToken guarda il lavoro che chiedi e il modello che usi, ti suggerisce quello adatto a inizio sessione con il risparmio in euro, e ti avvisa prima di un cambio a metà. Comando: `freetoken modello`.
 
 ### 19. Non toccare le istruzioni a metà lavoro [CC] 🪙
 Cambiare CLAUDE.md, accendere un connettore o cambiare modello a metà sessione rompe la cache: tutto da rileggere.

@@ -75,6 +75,7 @@ Scrivile in chat quando ti servono.
 | `comprimi` | il tuo testo più corto, senza perdere numeri, nomi e scadenze |
 | `dieta` | le tue istruzioni personalizzate dimagrite, con quanto risparmi su 100 messaggi |
 | `pagella` | un voto da 1 a 10 a come usi l'IA, e le 3 cose da cambiare subito |
+| `modello` | quale modello conviene per il lavoro che stai facendo, perché, e quanti euro risparmi |
 | `preventivo` | prima di un lavoro grande: come dividerlo per non bruciare i limiti |
 | `calcolatore` | il calcolatore: quanto pesa un testo e se conviene ripartire |
 | `regole` | le 7 regole d'oro |
@@ -96,7 +97,7 @@ Scrivile in chat quando ti servono.
 3. Manda solo la parte che serve: mai documenti interi se serve un paragrafo.
 4. L'errore si toglie tornando indietro (la matita sul tuo messaggio), non correggendo dopo.
 5. Istruzioni fisse corte, app collegate solo se servono, memoria salvata pulita.
-6. Il modello che ragiona decide, quello veloce esegue.
+6. Il modello giusto per il lavoro: potente per decidere, leggero per eseguire. Si sceglie all'inizio, non a metà.
 7. I lavori automatici partono solo quando c'è davvero lavoro.
 
 Vuoi capire il perché di ognuna, con esempi prima e dopo? Leggi **[le 23 strategie](STRATEGIE.md)**. Molte vanno contro il buon senso.
@@ -139,7 +140,9 @@ Preferisci non usare i plugin? `python3 FreeToken/claude-code/install.py` instal
 | «guarda tu», «cerca nel progetto» | Ti chiede di indicare il file |
 | Un'app collegata restituisce un risultato enorme | Te lo segnala e ti dice come chiederne meno |
 | Riprendi una sessione vecchia e grande | Ti dice quanto costerà il primo messaggio |
-| Stai per cambiare modello a metà | Ti avvisa che perdi lo sconto |
+| Chiedi una mail o una traduzione a Opus | Ti suggerisce Sonnet e quanto risparmi in euro (circa 0,80 € ogni 25 richieste) |
+| Chiedi architettura o strategia a un modello leggero, o fallisce due volte | Ti suggerisce il modello più potente, con il conto onesto |
+| Stai per cambiare modello a metà | Ti avvisa che perdi lo sconto, con la cifra in euro |
 | Apri un progetto (una volta al giorno) | Check-up: istruzioni troppo lunghe, troppe app collegate |
 
 Ogni blocco scatta **una volta sola**: FreeToken ti avvisa, non ti impedisce di lavorare. Vuoi solo avvisi, senza blocchi? Scrivi `"modalita": "morbida"` in `~/.freetoken/config.json`.
@@ -168,18 +171,18 @@ python3 FreeToken/plugins/freetoken/scripts/freetoken.py conto
 🪙 FREETOKEN · il tuo conto dal 03/11/2026 · 41 sessioni
 
 RISPARMIATI (stima prudente, in token equivalenti a prezzo di input)
-  Incolla enormi fermati                   12 volte      1,9M   ≈   9.40 $
-  File letti interi evitati                37 volte      2,6M   ≈  13.10 $
-  Ripartenze a cache fredda evitate         9 volte      1,4M   ≈   7.20 $
-  TOTALE                                                 5,9M   ≈  29.70 $
+  Incolla enormi fermati                   12 volte      1,9M   ≈     6,84 €
+  File letti interi evitati                37 volte      2,6M   ≈     9,36 €
+  Ripartenze a cache fredda evitate         9 volte      1,4M   ≈     5,04 €
+  TOTALE                                                 5,9M   ≈    21,24 €
 
 SPRECHI RILEVATI (qui c'è ancora da guadagnare)
-  Risultati pesanti entrati nella chat     22 volte      880k   ≈   4.40 $
-  Sessioni riprese a cache scaduta          6 volte      910k   ≈   4.55 $
+  Risultati pesanti entrati nella chat     22 volte      880k   ≈     3,17 €
+  Sessioni riprese a cache scaduta          6 volte      910k   ≈     3,28 €
 ```
 *(cifre di esempio)*
 
-Come si calcola: ogni cosa che entra nella chat si paga per intero la prima volta e poi circa un decimo a ogni richiesta successiva. Contiamo le richieste vere della sessione; quando non le abbiamo usiamo una media prudente. Il prezzo lo imposti tu in `~/.freetoken/config.json`.
+Come si calcola: ogni cosa che entra nella chat si paga per intero la prima volta e poi circa un decimo a ogni richiesta successiva. Contiamo le richieste vere della sessione; quando non le abbiamo usiamo una media prudente. Le cifre sono in euro: FreeToken riconosce il modello che usi e prende il suo prezzo (listino API di novembre 2026, cambio 1 dollaro = 0,90 euro). Prezzo e cambio li puoi cambiare in `~/.freetoken/config.json`.
 
 ### Gli altri strumenti
 
@@ -187,6 +190,7 @@ Come si calcola: ogni cosa che entra nella chat si paga per intero la prima volt
 python3 FreeToken/plugins/freetoken/scripts/freetoken.py audit      # lavori ripetuti che girano a vuoto, ultimi 30 giorni
 python3 FreeToken/plugins/freetoken/scripts/freetoken.py pagella    # check-up del progetto
 python3 FreeToken/plugins/freetoken/scripts/freetoken.py misura FILE  # quanto pesa un file nella chat
+python3 FreeToken/plugins/freetoken/scripts/freetoken.py modello    # quale modello conviene e quanti euro risparmi
 ```
 
 Per i lavori automatici c'è anche `claude-code/esempi/guardia.sh`: sveglia l'IA solo se c'è davvero qualcosa da fare.

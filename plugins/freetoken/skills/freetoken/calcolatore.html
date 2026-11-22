@@ -17,6 +17,7 @@
   textarea { width:100%; min-height:150px; border:1px solid var(--bordo); border-radius:10px; padding:12px; font:14px/1.4 ui-monospace,Menlo,monospace; background:var(--carta); resize:vertical; }
   label { display:block; font-size:14px; color:var(--tenue); margin:14px 0 4px; }
   input[type=range] { width:100%; accent-color:var(--arancio); }
+  select { padding:6px 8px; border:1px solid var(--bordo); border-radius:8px; font-size:15px; max-width:100%; background:#fff; }
   input[type=number] { width:120px; padding:6px 8px; border:1px solid var(--bordo); border-radius:8px; font-size:15px; }
   .cifre { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
   .cifra { background:var(--carta); border-radius:10px; padding:12px; }
@@ -41,7 +42,7 @@
     <div class="cifre">
       <div class="cifra"><b id="tok">0</b><small>token stimati</small></div>
       <div class="cifra"><b id="peso">0</b><small>token equivalenti nella chat</small></div>
-      <div class="cifra"><b id="soldi">0,00 $</b><small>se paghi a consumo</small></div>
+      <div class="cifra"><b id="soldi">0,00 €</b><small>se paghi a consumo</small></div>
     </div>
     <div class="verdetto" id="verdetto1">Incolla qualcosa per vedere il verdetto.</div>
   </section>
@@ -63,12 +64,34 @@
   </section>
 
   <section>
+    <h2>3. Stai usando il modello giusto?</h2>
+    <div class="riga">
+      <div><label for="mod">Modello che usi</label><select id="mod">
+        <option value="opus">Claude Opus</option><option value="sonnet">Claude Sonnet</option><option value="haiku">Claude Haiku</option>
+        <option value="astra">GPT Astra</option><option value="sol">GPT Sol</option><option value="terra">GPT Terra</option><option value="luna">GPT Luna</option>
+      </select></div>
+      <div><label for="lavoro">Che lavoro fai</label><select id="lavoro">
+        <option value="semplice">Semplice: mail, traduzione, riassunto, formattazione</option>
+        <option value="medio">Normale: testi, analisi brevi, codice piccolo</option>
+        <option value="difficile">Difficile: strategia, codice su più file, analisi lunghe</option>
+      </select></div>
+      <div><label for="nreq">Richieste nella sessione</label><input type="number" id="nreq" value="25"></div>
+    </div>
+    <div class="cifre">
+      <div class="cifra"><b id="costoOra">0</b><small>con il tuo modello</small></div>
+      <div class="cifra"><b id="costoGiusto">0</b><small id="nomeGiusto">con quello adatto</small></div>
+      <div class="cifra"><b id="diff">0</b><small>differenza</small></div>
+    </div>
+    <div class="verdetto" id="verdetto3"></div>
+  </section>
+
+  <section>
     <h2>Impostazioni</h2>
     <div class="riga">
-      <div><label for="prezzo">Prezzo $ per milione di token in ingresso</label><input type="number" id="prezzo" value="5" step="0.5"></div>
+      <div><label for="prezzo">Prezzo in euro per milione di token in ingresso</label><input type="number" id="prezzo" value="3.6" step="0.1"></div>
       <div><label for="cpt">Caratteri per token</label><input type="number" id="cpt" value="3.6" step="0.1"></div>
     </div>
-    <p class="sotto" style="margin:12px 0 0;font-size:13px">Modello di calcolo: il contenuto entra una volta in cache (1,25 volte il prezzo) e poi viene riletto a ogni messaggio a circa un decimo. A cache scaduta si riscrive tutto. Le cifre sono stime per decidere, non una fattura. In abbonamento non paghi in dollari ma in limiti raggiunti prima.</p>
+    <p class="sotto" style="margin:12px 0 0;font-size:13px">Modello di calcolo: il contenuto entra una volta in cache (1,25 volte il prezzo) e poi viene riletto a ogni messaggio a circa un decimo. A cache scaduta si riscrive tutto. Le cifre sono stime per decidere, non una fattura. In abbonamento non paghi in euro ma in limiti raggiunti prima. Prezzi: listino API di novembre 2026, 1 dollaro = 0,90 euro.</p>
   </section>
 
   <footer>🪙 <a href="https://github.com/Giandoms/FreeToken">FreeToken</a>: gratis per ChatGPT, Claude e Claude Code · un progetto di <a href="https://www.giandosantamaria.it">Giando Santamaria</a>, il Facilitatore IA delle PMI</footer>
@@ -83,7 +106,7 @@
     $('dopoVal').textContent = dopo;
     const peso = t * SCR + t * LET * dopo;
     $('tok').textContent = f(t); $('peso').textContent = f(peso);
-    $('soldi').textContent = (peso / 1e6 * prezzo).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+    $('soldi').textContent = (peso / 1e6 * prezzo).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     const righe = $('testo').value ? $('testo').value.split('\n').length : 0;
     let v = 'Incolla qualcosa per vedere il verdetto.';
     if (t > 0 && t < 2000) v = 'Leggero. Mandalo pure.';
@@ -103,9 +126,37 @@
     const r = tieni > 0 ? Math.max(0, 1 - riparti / tieni) : 0;
     $('risp').textContent = Math.round(r * 100) + '%';
     $('verdetto2').textContent = r > 0.3
-      ? `Riparti dalla nota: risparmi circa ${f(tieni - riparti)} token equivalenti, e l'IA ragiona su 20 righe chiare invece che su una chat confusa.`
+      ? `Riparti dalla nota: risparmi circa ${f(tieni - riparti)} token equivalenti (circa ${((tieni - riparti) / 1e6 * (parseFloat($('prezzo').value) || 0)).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2})} €), e l'IA ragiona su 20 righe chiare invece che su una chat confusa.`
       : 'Qui tenere la chat conviene ancora: è leggera o ti mancano pochi messaggi. Vale solo se stai facendo lo stesso lavoro.';
   }
+  // 3. modello giusto: dollari per milione (ingresso, uscita), 10.000 token in ingresso e 1.500 in uscita a richiesta
+  const LIST = {opus:[4,20,'Claude Opus'], sonnet:[2,10,'Claude Sonnet'], haiku:[0.1,0.5,'Claude Haiku'],
+    astra:[8,40,'GPT Astra'], sol:[2,10,'GPT Sol'], terra:[1,5,'GPT Terra'], luna:[0.1,0.5,'GPT Luna']};
+  const ORDINE = {claude:['haiku','sonnet','opus'], gpt:['luna','terra','sol','astra']};
+  const GIUSTO = {semplice:{claude:'sonnet', gpt:'sol'}, medio:{claude:'sonnet', gpt:'sol'}, difficile:{claude:'opus', gpt:'astra'}};
+  const eu = x => x < 0.01 ? 'meno di 1 cent.' : x.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+  function modello() {
+    const m = $('mod').value, lav = $('lavoro').value, n = +$('nreq').value || 0;
+    const fam = m in {opus:1,sonnet:1,haiku:1} ? 'claude' : 'gpt';
+    const costo = k => n * (10000 * LIST[k][0] + 1500 * LIST[k][1]) / 1e6 * 0.9;
+    const pos = ORDINE[fam]; let g = GIUSTO[lav][fam];
+    if (lav !== 'difficile' && pos.indexOf(m) < pos.indexOf(g)) g = m;  // già più economico: va bene
+    $('costoOra').textContent = eu(costo(m)); $('costoGiusto').textContent = eu(costo(g));
+    $('nomeGiusto').textContent = 'con ' + LIST[g][2];
+    const d = costo(m) - costo(g);
+    $('diff').textContent = Math.abs(d) < 0.005 ? 'nessuna' : (d >= 0 ? '' : '+') + eu(Math.abs(d));
+    let v;
+    if (g === m)
+      v = `${LIST[m][2]} è giusto per questo lavoro.`;
+    else if (pos.indexOf(m) > pos.indexOf(g))
+      v = `Per questo lavoro basta ${LIST[g][2]}: risparmi circa ${eu(d)} ogni ${n} richieste. Cambialo all'inizio di una chat nuova, non a metà.`;
+    else
+      v = `Qui serve ${LIST[g][2]}. Costa circa ${eu(-d)} in più ogni ${n} richieste, ma un lavoro difficile rifatto tre volte costa di più, in token e in tempo.`;
+    $('verdetto3').textContent = v + ' In abbonamento non paghi in euro: risparmi limiti.';
+  }
+  document.querySelectorAll('select').forEach(e => e.addEventListener('change', modello));
+  $('nreq').addEventListener('input', modello);
+  modello();
   document.querySelectorAll('input,textarea').forEach(e => e.addEventListener('input', calcola));
   calcola();
 </script>

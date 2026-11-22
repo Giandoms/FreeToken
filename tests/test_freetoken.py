@@ -94,11 +94,30 @@ out = gira("freetoken.py", {"session_id": "prova9", "cwd": str(TMP), "hook_event
                            "source": "startup"}, "hook")
 verifica("mette le regole nel contesto", '"additionalContext"' in out and "FreeToken è attivo" in out, out[:200])
 
+print("Consiglio del modello, in euro")
+m = {"cwd": str(TMP), "hook_event_name": "UserPromptSubmit"}
+out = gira("freetoken.py", {**m, "session_id": "mod1", "model": "claude-opus-5-5",
+                           "prompt": "riscrivi questa mail in modo più formale"}, "hook")
+verifica("Opus su una mail: suggerisce Sonnet", "/model sonnet" in out and "€" in out, out[:300])
+out = gira("freetoken.py", {**m, "session_id": "mod1", "model": "claude-opus-5-5", "prompt": "ora traducila"}, "hook")
+verifica("un solo consiglio per sessione", out == "", out[:200])
+out = gira("freetoken.py", {**m, "session_id": "mod2", "model": {"id": "claude-sonnet-5-5"},
+                           "prompt": "progetta l'architettura del modulo fatture su più file"}, "hook")
+verifica("Sonnet su un lavoro difficile: suggerisce Opus", "/model opus" in out and "€" in out, out[:300])
+for testo in ("non funziona ancora", "stesso errore, riprova"):
+    out = gira("freetoken.py", {**m, "session_id": "mod3", "model": "claude-haiku-5-5", "prompt": testo}, "hook")
+verifica("due tentativi falliti: suggerisce di salire", "/model sonnet" in out, out[:300])
+out = gira("freetoken.py", {**m, "session_id": "mod4", "model": "claude-sonnet-5-5",
+                           "prompt": "riassumi questo paragrafo"}, "hook")
+verifica("Sonnet su un riassunto: nessun avviso", out == "", out[:200])
+r = subprocess.run([sys.executable, str(RADICE / "freetoken.py"), "modello"], capture_output=True, text=True, env=ENV)
+verifica("comando modello in euro", "Claude Opus → Claude Sonnet" in r.stdout and "€" in r.stdout, r.stderr)
+
 print("Fine sessione e conto")
 gira("freetoken.py", {**base, "hook_event_name": "SessionEnd"}, "hook")
 r = subprocess.run([sys.executable, str(RADICE / "freetoken.py"), "conto"], capture_output=True, text=True, env=ENV)
 print(r.stdout)
-verifica("il conto ha un totale", "TOTALE" in r.stdout)
+verifica("il conto ha un totale in euro", "TOTALE" in r.stdout and "€" in r.stdout and " $" not in r.stdout)
 r = subprocess.run([sys.executable, str(RADICE / "freetoken.py"), "pagella", str(TMP)], capture_output=True, text=True, env=ENV)
 verifica("pagella vede node_modules", "node_modules" in r.stdout, r.stdout)
 r = subprocess.run([sys.executable, str(RADICE / "freetoken.py"), "audit"], capture_output=True, text=True, env=ENV)
