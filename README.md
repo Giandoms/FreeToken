@@ -1,4 +1,4 @@
-![FreeToken: la tua IA ti avvisa quando consumi troppo, e ti dice cosa fare](assets/banner.svg)
+![FreeToken: la tua IA ti avvisa quando consumi troppo, e ti dice cosa fare](assets/banner-v2.svg)
 
 # 🪙 FreeToken
 
@@ -8,7 +8,7 @@ Creato da [Giando Santamaria](#chi-ha-creato-freetoken), il primo in Italia a sc
 
 **[▶ Prova subito il calcolatore gratuito](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)** · nessuna registrazione, funziona nel browser
 
-Funziona su **ChatGPT**, **Claude** (chat, app e Cowork) e **Claude Code**. Gratis, in italiano, senza installare niente sulle chat.
+Funziona su **ChatGPT**, **Claude** (chat, app e Cowork), **Claude Code** e **Codex**. Gratis, in italiano, senza installare niente sulle chat.
 
 ---
 
@@ -22,9 +22,15 @@ Quasi tutti fanno l'opposto di quello che conviene: tengono aperta la stessa cha
 
 ## Come si vede
 
-Lavori come sempre. Quando la chat consuma troppo, in fondo alla risposta compare l'avviso:
+Lavori come sempre. Quando la chat consuma troppo, in fondo alla risposta compare l'avviso: **cosa succede, perché ti costa, cosa fare**.
 
-![Esempio di avviso FreeToken in una chat](assets/avviso.svg)
+![Esempio di avviso FreeToken in una chat](assets/avviso-v2.svg)
+
+Funziona come un semaforo, e ogni colore scatta una volta sola:
+
+- 🟡 **la chat inizia a pesare**: ti spiega perché, e ti chiede se stai ancora facendo lo stesso lavoro;
+- 🟠 **da qui l'IA sbaglia di più**: ti consiglia di ripartire;
+- 🔴 **riparti adesso**: ti scrive già il Passaggio, 10 righe da copiare in una chat nuova. Non devi neanche chiederlo.
 
 Se va tutto bene, non dice niente. Un guardiano dei consumi che parla troppo sarebbe il primo spreco.
 
@@ -34,6 +40,8 @@ Se va tutto bene, non dice niente. Un guardiano dei consumi che parla troppo sar
 |---|---|---|
 | **ChatGPT** | Copi `INCOLLA-QUESTO.txt` nelle Istruzioni personalizzate | [chatgpt/COME-SI-USA.md](chatgpt/COME-SI-USA.md) |
 | **Claude** (chat, app, Cowork) | Copi `INCOLLA-QUESTO.txt` nelle tue Istruzioni, e se vuoi carichi la [skill già pronta](https://github.com/Giandoms/FreeToken/raw/main/scarica/freetoken-skill.zip) | [claude/COME-SI-USA.md](claude/COME-SI-USA.md) |
+| **Cowork** (attività programmate) | Metti la guardia in testa a ogni attività: se non c'è niente di nuovo, si ferma subito | [cowork/COME-SI-USA.md](cowork/COME-SI-USA.md) |
+| **Codex** | Copi `codex/AGENTS.md` nelle istruzioni di Codex | [codex/COME-SI-USA.md](codex/COME-SI-USA.md) |
 | **Claude Code** | Lanci un comando e fa tutto da solo, con i numeri veri | [più sotto](#claude-code-il-pilota-automatico) |
 | **Gemini e altre** | Copi `INCOLLA-QUESTO.txt` nelle istruzioni della Gem o dell'assistente | |
 
@@ -59,7 +67,7 @@ Scrivile in chat quando ti servono.
 - **Arrivi ai limiti più tardi** se sei in abbonamento, **spendi meno** se paghi a consumo.
 - **Risposte migliori**: in una chat corta e pulita l'IA si perde meno e non ripete errori già corretti.
 - **Cambi IA senza ricominciare**: il Passaggio porta il lavoro da una chat all'altra, e da un'IA all'altra.
-- **Smetti di pagare i lavori automatici a vuoto**: FreeToken ti avvisa quando crei un'attività programmata che consumerebbe anche senza niente da fare.
+- **Smetti di pagare i lavori automatici a vuoto**: con la guardia, un'attività programmata che non trova niente si ferma subito invece di lavorare a vuoto. È qui che si libera più spazio.
 - **Impari le abitudini giuste** senza studiare niente: te le dice lui, al momento giusto.
 
 ## Le 7 regole d'oro
@@ -175,6 +183,8 @@ freetoken/
 ├── STRATEGIE.md         le 23 strategie con esempi prima e dopo
 ├── chatgpt/             il GPT completo e la guida
 ├── claude/              la skill per chat, app e Cowork, e la guida
+├── cowork/              la guardia per le attività programmate
+├── codex/               le istruzioni per Codex
 ├── claude-code/         il pilota automatico
 ├── scarica/             la skill pronta da caricare in Claude
 ├── strumenti/           il calcolatore gratuito

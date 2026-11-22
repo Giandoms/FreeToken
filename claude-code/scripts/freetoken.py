@@ -262,8 +262,9 @@ def evento_prompt(d):
         costo = peso(t, CFG["richieste_medie_dopo"])
         consiglio = ("incolla solo l'errore e le ultime 30 righe." if cosa == "un log"
                      else "salvalo in un file e chiedi di leggere solo la parte che ti serve.")
-        testo = (f"Stai incollando {cosa} di {num(righe)} righe. Resterebbe nella chat fino alla fine "
-                 f"e lo pagheresti a ogni risposta (circa {k(costo)} token, {usd(costo):.2f} $).\n"
+        testo = (f"Stai incollando {cosa} di {num(righe)} righe.\n"
+                 f"   Perché: resterebbe nella chat fino alla fine e lo pagheresti a ogni risposta "
+                 f"(circa {k(costo)} token, {usd(costo):.2f} $).\n"
                  f"   Cosa fare: {consiglio}\n"
                  f"   Ti serve davvero tutto? Rimandalo iniziando con {CFG['prefisso_forza']}")
         if rigida:
@@ -281,9 +282,9 @@ def evento_prompt(d):
         st["cache_avvisata"] = scade
         minuti = int((adesso - scade) / 60) + 1
         costo = riscr * CFG["moltiplicatore_scrittura_cache"]
-        testo = (f"Hai fatto una pausa e lo sconto sulla chat è scaduto ({minuti} min fa). "
-                 f"Questo messaggio farebbe rileggere tutto a prezzo pieno (circa {k(riscr)} token, "
-                 f"{usd(costo):.2f} $).\n"
+        testo = (f"Hai fatto una pausa e lo sconto sulla chat è scaduto ({minuti} min fa).\n"
+                 f"   Perché: finché lavori la chat costa circa un decimo; dopo la pausa questo messaggio "
+                 f"la rilegge tutta a prezzo pieno (circa {k(riscr)} token, {usd(costo):.2f} $).\n"
                  f"   Cosa fare: /clear e poi /riparti (riparti dalla nota, quasi gratis). "
                  f"Nessuna nota? Dopo /clear scrivi tu in 5 righe dove eri.\n"
                  f"   Vuoi continuare qui lo stesso? Rimanda il messaggio.")
@@ -303,15 +304,17 @@ def evento_prompt(d):
         if pct >= s and s not in fatte:
             fatte.update(x for x in CFG["soglie_chat_percento"] if x <= s)
             if s >= 85:
-                avvisi.append(f"🔴 Chat piena all'{pct}%: tra poco Claude la riassume da solo, in fretta "
-                              f"e perdendo pezzi.\n   Cosa fare adesso: /nota, poi /clear, poi /riparti.")
+                avvisi.append(f"🔴 Chat piena all'{pct}%.\n   Perché: tra poco Claude la riassume da solo, "
+                              f"in fretta e perdendo pezzi, e intanto ogni messaggio costa il massimo.\n"
+                              f"   Cosa fare adesso: /nota, poi /clear, poi /riparti.")
             elif s >= 70:
-                avvisi.append(f"🟠 Chat al {pct}%: da qui le risposte peggiorano e ogni messaggio costa di più.\n"
+                avvisi.append(f"🟠 Chat al {pct}%.\n   Perché: Claude rilegge troppe cose vecchie, "
+                              f"le risposte peggiorano e ogni messaggio costa di più.\n"
                               f"   Cosa fare: hai cambiato lavoro? /nota, /clear, /riparti. "
                               f"Stesso lavoro? /compact tieni solo decisioni, file aperti e prossimo passo")
             else:
-                avvisi.append(f"🟡 Chat a metà ({pct}%). Ogni messaggio ora si porta dietro tutto questo.\n"
-                              f"   Domanda da farti: sto ancora facendo lo stesso lavoro? Se no: /nota e /clear.")
+                avvisi.append(f"🟡 Chat a metà ({pct}%).\n   Perché: ogni messaggio ora si porta dietro tutto questo.\n"
+                              f"   Cosa fare: stesso lavoro? Continua. Lavoro nuovo? /nota e /clear.")
             break
     st["soglie"] = sorted(fatte)
 
@@ -321,7 +324,8 @@ def evento_prompt(d):
             re.fullmatch(r"(grazie|ok|okay|perfetto|bene|ottimo|top|va bene|si|sì|👍|🙏)[\s!.,👍🙏]*.*", corto):
         equivalente = ctx * CFG["moltiplicatore_lettura_cache"]
         registra(sid, "grazie_costoso", ctx, equivalente, corto, sit.get("richieste"))
-        avvisi.append(f"Anche \"{p.strip()[:20]}\" fa rileggere tutta la chat (circa {k(equivalente)} token).\n"
+        avvisi.append(f"Hai scritto solo \"{p.strip()[:20]}\".\n   Perché costa: anche così Claude rilegge tutta la chat "
+                      f"(circa {k(equivalente)} token).\n"
                       f"   Cosa fare: il grazie mettilo nel messaggio con la prossima richiesta.")
 
     # 5. Richieste di file interi
