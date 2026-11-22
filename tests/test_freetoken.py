@@ -8,7 +8,7 @@ import tempfile
 import time
 from pathlib import Path
 
-RADICE = Path(__file__).resolve().parent.parent / "claude-code" / "scripts"
+RADICE = Path(__file__).resolve().parent.parent / "plugins" / "freetoken" / "scripts"
 TMP = Path(tempfile.mkdtemp())
 ENV = dict(os.environ, FREETOKEN_HOME=str(TMP / "dati"))
 ok = fail = 0
@@ -88,6 +88,11 @@ print("Uscita pesante")
 out = gira("freetoken.py", {**base, "hook_event_name": "PostToolUse", "tool_name": "mcp__Meta_ADS__x",
                         "tool_response": {"dati": "x" * 80000}}, "hook")
 verifica("avvisa uscita pesante", "connettore" in out, out[:200])
+
+print("Regole sempre attive all'avvio")
+out = gira("freetoken.py", {"session_id": "prova9", "cwd": str(TMP), "hook_event_name": "SessionStart",
+                           "source": "startup"}, "hook")
+verifica("mette le regole nel contesto", '"additionalContext"' in out and "FreeToken è attivo" in out, out[:200])
 
 print("Fine sessione e conto")
 gira("freetoken.py", {**base, "hook_event_name": "SessionEnd"}, "hook")

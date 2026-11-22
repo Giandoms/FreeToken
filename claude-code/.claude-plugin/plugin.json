@@ -1,8 +1,0 @@
-{
-  "name": "freetoken",
-  "version": "1.0.0",
-  "description": "Il guardiano dei token: ti ferma prima che sprechi (incolla enormi, file letti interi, cache scaduta) e ti dice quanto hai risparmiato.",
-  "author": { "name": "Giando Santamaria", "url": "https://www.giandosantamaria.it" },
-  "license": "MIT",
-  "keywords": ["token", "costi", "risparmio", "cache", "contesto"]
-}

@@ -48,7 +48,19 @@ PREDEFINITI = {
                      r"\.(csv|tsv|parquet|sqlite|db)$"],
     "statusline_precedente": "",
     "modalita": "rigida",               # "rigida" blocca, "morbida" avvisa soltanto
+    "regole_sempre_attive": True,       # mette le regole FreeToken nel contesto a ogni avvio
 }
+
+REGOLE_SEMPRE_ATTIVE = (
+    "FreeToken è attivo in questa sessione. Regole per l'assistente: rispondi sempre prima alla richiesta. "
+    "Se la sessione consuma troppo, aggiungi in fondo un avviso in tre righe: "
+    "'[🟡/🟠/🔴] FreeToken · cosa succede' / 'Perché: ...' / 'Cosa fare: ...'. "
+    "🟡 sessione a metà; 🟠 sessione lunga o cambio di argomento; 🔴 quasi piena: proponi /nota, /clear e /riparti. "
+    "Avvisa anche se l'utente incolla testi enormi, chiede di riscrivere file interi per piccole modifiche, "
+    "chiede di cercare senza dire dove, o crea attività ripetute (devono partire controllando se c'è qualcosa di nuovo). "
+    "Un avviso al massimo per risposta, nessuno se va tutto bene, linguaggio semplice. "
+    "Per lavorare leggero: cerca prima di leggere file grandi, leggi solo le righe utili, fai modifiche mirate."
+)
 
 RISPARMI = {
     "incolla_bloccato": "Incolla enormi fermati",
@@ -70,7 +82,7 @@ PERSISTENTI = {"incolla_bloccato", "lettura_bloccata", "cat_bloccato", "uscita_p
 
 def config():
     cfg = dict(PREDEFINITI)
-    for f in (QUI.parent / "config" / "freetoken.json", DATI / "config.json"):
+    for f in (QUI.parent / "config.json", DATI / "config.json"):
         try:
             cfg.update(json.loads(f.read_text(encoding="utf-8")))
         except Exception:
@@ -465,6 +477,9 @@ def evento_inizio(d):
         except Exception:
             pass
 
+    # Regole sempre attive: entrano nel contesto all'avvio, così l'IA avvisa anche senza chiamare la skill
+    contesto = REGOLE_SEMPRE_ATTIVE if fonte in ("startup", "clear", "resume", "compact", "fork") else ""
+
     # Check-up leggero, al massimo una volta al giorno per progetto
     if fonte == "startup":
         timbro = DATI / "timbri" / (hashlib.md5(cwd.encode()).hexdigest() + ".txt")
@@ -474,7 +489,12 @@ def evento_inizio(d):
             timbro.write_text(oggi)
             avvisi.extend(diagnosi(cwd, breve=True))
 
-    avvisa(avvisi)
+    uscita = {}
+    if avvisi:
+        uscita["systemMessage"] = "🪙 FreeToken\n" + "\n".join("• " + t for t in avvisi)
+    if contesto and CFG.get("regole_sempre_attive", True):
+        uscita["hookSpecificOutput"] = {"hookEventName": "SessionStart", "additionalContext": contesto}
+    esci(uscita or None)
 
 
 def evento_compattazione(d):
@@ -753,7 +773,7 @@ def cmd_calcolatore(args):
     import webbrowser
     locale = DATI / "calcolatore.html"
     if not locale.exists():
-        locale = QUI.parent.parent / "strumenti" / "calcolatore.html"
+        locale = QUI.parent / "skills" / "freetoken" / "calcolatore.html"
     print(f"Calcolatore: {locale}\nVersione online: https://giandoms.github.io/FreeToken/strumenti/calcolatore.html" )
     webbrowser.open(locale.resolve().as_uri())
 

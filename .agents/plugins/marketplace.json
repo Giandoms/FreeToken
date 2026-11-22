@@ -1,0 +1,12 @@
+{
+  "name": "freetoken",
+  "interface": { "displayName": "FreeToken" },
+  "plugins": [
+    {
+      "name": "freetoken",
+      "source": { "source": "local", "path": "./plugins/freetoken" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    }
+  ]
+}

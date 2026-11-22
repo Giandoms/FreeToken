@@ -1,0 +1,12 @@
+{
+  "name": "freetoken",
+  "description": "FreeToken: il guardiano dei consumi dell'IA, gratis e in italiano.",
+  "owner": { "name": "Giando Santamaria", "url": "https://www.giandosantamaria.it" },
+  "plugins": [
+    {
+      "name": "freetoken",
+      "source": "./plugins/freetoken",
+      "description": "Ti avvisa quando la chat con l'IA consuma troppo e ti dice cosa fare."
+    }
+  ]
+}

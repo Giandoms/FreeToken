@@ -8,7 +8,7 @@ Creato da [Giando Santamaria](#chi-ha-creato-freetoken), il primo in Italia a sc
 
 **[▶ Prova subito il calcolatore gratuito](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)** · nessuna registrazione, funziona nel browser
 
-Funziona su **ChatGPT**, **Claude** (chat, app e Cowork), **Claude Code** e **Codex**. Gratis, in italiano, senza installare niente sulle chat.
+Funziona su **ChatGPT**, **Claude** (chat, app e Cowork), **Claude Code** e **Codex**. Gratis, in italiano, si installa da qui come plugin.
 
 ---
 
@@ -36,14 +36,33 @@ Se va tutto bene, non dice niente. Un guardiano dei consumi che parla troppo sar
 
 ## Installalo in un minuto
 
-| Dove lo usi | Cosa fai | Guida |
+FreeToken è **un plugin**: un pacchetto unico, con dentro la skill che interviene da sola, i comandi e, dove l'app lo permette, il pilota automatico. Lo stesso pacchetto funziona su Claude e su ChatGPT/Codex. Si installa direttamente da questa pagina GitHub.
+
+| Dove lo usi | Come lo installi | Cosa ottieni |
 |---|---|---|
-| **ChatGPT** | Copi `INCOLLA-QUESTO.txt` nelle Istruzioni personalizzate | [chatgpt/COME-SI-USA.md](chatgpt/COME-SI-USA.md) |
-| **Claude** (chat, app, Cowork) | Copi `INCOLLA-QUESTO.txt` nelle tue Istruzioni, e se vuoi carichi la [skill già pronta](https://github.com/Giandoms/FreeToken/raw/main/scarica/freetoken-skill.zip) | [claude/COME-SI-USA.md](claude/COME-SI-USA.md) |
-| **Cowork** (attività programmate) | Metti la guardia in testa a ogni attività: se non c'è niente di nuovo, si ferma subito | [cowork/COME-SI-USA.md](cowork/COME-SI-USA.md) |
-| **Codex** | Copi `codex/AGENTS.md` nelle istruzioni di Codex | [codex/COME-SI-USA.md](codex/COME-SI-USA.md) |
-| **Claude Code** | Lanci un comando e fa tutto da solo, con i numeri veri | [più sotto](#claude-code-il-pilota-automatico) |
-| **Gemini e altre** | Copi `INCOLLA-QUESTO.txt` nelle istruzioni della Gem o dell'assistente | |
+| **Claude** (web, app, Cowork) | **Personalizza → Plugin → +** → *Aggiungi marketplace da GitHub* → scrivi `Giandoms/FreeToken` → aggiungi **FreeToken** | In chat: la skill che interviene da sola. In Cowork: anche il pilota automatico |
+| **Claude Code** | Scrivi `/plugin install freetoken --marketplace Giandoms/FreeToken` | Il pilota automatico completo, con i numeri veri |
+| **Codex** | Nel Terminale: `codex plugin marketplace add Giandoms/FreeToken` e poi `codex plugin add freetoken@freetoken` | La skill che interviene da sola e i comandi |
+| **ChatGPT** | Dopo il comando qui sopra, FreeToken compare tra i plugin dell'app desktop di ChatGPT: aprilo e premi **+**. Nelle aziende, l'amministratore può importare il marketplace da GitHub per tutti | La skill che interviene da sola |
+| **Ovunque, in 30 secondi** | Copia [`INCOLLA-QUESTO.txt`](INCOLLA-QUESTO.txt) nelle istruzioni personalizzate (ChatGPT, Claude, Gemini) | Il semaforo sempre acceso, in versione leggera |
+
+**Il consiglio:** plugin **e** blocco nelle istruzioni. Il plugin porta tutti i comandi, il blocco garantisce che l'avviso ci sia in ogni chat.
+
+Guide passo passo: [Claude e Cowork](claude/COME-SI-USA.md) · [ChatGPT](chatgpt/COME-SI-USA.md) · [Codex](codex/COME-SI-USA.md) · [attività programmate di Cowork](cowork/COME-SI-USA.md).
+
+> I GPT personalizzati di ChatGPT verranno ritirati l'11 dicembre 2026 e sostituiti dai plugin. Per questo FreeToken è un plugin e non un GPT.
+
+## Come fa a intervenire da solo
+
+Non devi richiamarlo. Lavora su tre livelli, e più livelli attivi, più è affidabile.
+
+| Livello | Dove | Come funziona | Quanto è affidabile |
+|---|---|---|---|
+| **1. Pilota automatico** | Claude Code, Cowork | Controlli agganciati all'app che partono **prima** che il messaggio venga inviato. Leggono i consumi veri e possono fermare uno spreco. All'avvio mettono anche le regole FreeToken nella sessione | Sempre, senza eccezioni |
+| **2. Skill autonoma** | Claude (web, app), ChatGPT, Codex | L'IA conosce sempre il nome e la descrizione di FreeToken. Quando riconosce un segnale (chat lunga, testo enorme, cambio di argomento, correzione) la apre da sola e aggiunge l'avviso | Quasi sempre: decide il modello, quindi non è garantito al cento per cento |
+| **3. Blocco sempre acceso** | Ovunque | Le regole stanno nelle istruzioni personalizzate, quindi sono presenti in ogni messaggio | Sempre, in versione leggera e con cifre stimate |
+
+Quanto costa tenerlo acceso? Claude Code stima circa **230 token per sessione**: meno di quanto costa un «grazie» in una chat lunga.
 
 ## Le parole magiche
 
@@ -60,7 +79,7 @@ Scrivile in chat quando ti servono.
 | `calcolatore` | il calcolatore: quanto pesa un testo e se conviene ripartire |
 | `regole` | le 7 regole d'oro |
 
-`nota` e `quanto` funzionano già con il solo blocco. Le altre arrivano con il GPT o con la skill.
+`nota` e `quanto` funzionano già con il solo blocco. Le altre arrivano con il plugin.
 
 ## Cosa ci guadagni
 
@@ -84,7 +103,7 @@ Vuoi capire il perché di ognuna, con esempi prima e dopo? Leggi **[le 23 strate
 
 ## Il calcolatore gratuito
 
-**[Aprilo online](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)**, oppure apri [`strumenti/calcolatore.html`](strumenti/calcolatore.html) dalla cartella scaricata. Chi installa FreeToken lo ha già: nella skill (scrivi `calcolatore`) e in Claude Code (`python3 claude-code/scripts/freetoken.py calcolatore`). Incolli un testo e vedi quanto ti costa tenerlo nella chat, e se ti conviene continuare o ripartire dalla nota. Funziona senza internet, niente esce dal tuo computer.
+**[Aprilo online](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)**, oppure apri [`strumenti/calcolatore.html`](strumenti/calcolatore.html) dalla cartella scaricata. Chi installa FreeToken lo ha già dentro il plugin: scrivi `calcolatore`. Incolli un testo e vedi quanto ti costa tenerlo nella chat, e se ti conviene continuare o ripartire dalla nota. Funziona senza internet, niente esce dal tuo computer.
 
 ---
 
@@ -92,15 +111,20 @@ Vuoi capire il perché di ognuna, con esempi prima e dopo? Leggi **[le 23 strate
 
 Qui FreeToken non si limita ad avvisare: legge i consumi veri, ferma gli sprechi prima che succedano e ti fa il conto di quanto hai risparmiato.
 
-```bash
-git clone https://github.com/Giandoms/FreeToken.git
-cd FreeToken
-python3 claude-code/install.py
+```
+/plugin install freetoken --marketplace Giandoms/FreeToken
 ```
 
-Riavvia Claude Code. Serve solo Python 3.8 o successivo. Su Windows scrivi `python` invece di `python3`. Per toglierlo: `python3 claude-code/install.py --rimuovi` (rimette anche la tua barra di stato di prima).
+Serve Python 3.8 o successivo, che su Mac e Linux c'è quasi sempre. Il plugin porta la skill, i comandi e i controlli automatici.
 
-Si può installare anche come plugin: la cartella `claude-code` ha già tutto il necessario.
+**La barra in basso (facoltativa).** I plugin non possono installare la barra di stato, quindi è un passo a parte:
+
+```bash
+git clone https://github.com/Giandoms/FreeToken.git
+python3 FreeToken/claude-code/install.py --solo-barra
+```
+
+Preferisci non usare i plugin? `python3 FreeToken/claude-code/install.py` installa tutto a mano, e `--rimuovi` lo toglie rimettendo la tua barra di prima. Su Windows scrivi `python` invece di `python3`.
 
 ### Cosa fa da solo
 
@@ -137,7 +161,7 @@ Il conto alla rovescia (`⏳ 3:12`) è il dato che nessuno ti mostra: finché sc
 ### Il conto del risparmio
 
 ```bash
-python3 claude-code/scripts/freetoken.py conto
+python3 FreeToken/plugins/freetoken/scripts/freetoken.py conto
 ```
 
 ```
@@ -160,9 +184,9 @@ Come si calcola: ogni cosa che entra nella chat si paga per intero la prima volt
 ### Gli altri strumenti
 
 ```bash
-python3 claude-code/scripts/freetoken.py audit      # lavori ripetuti che girano a vuoto, ultimi 30 giorni
-python3 claude-code/scripts/freetoken.py pagella    # check-up del progetto
-python3 claude-code/scripts/freetoken.py misura FILE  # quanto pesa un file nella chat
+python3 FreeToken/plugins/freetoken/scripts/freetoken.py audit      # lavori ripetuti che girano a vuoto, ultimi 30 giorni
+python3 FreeToken/plugins/freetoken/scripts/freetoken.py pagella    # check-up del progetto
+python3 FreeToken/plugins/freetoken/scripts/freetoken.py misura FILE  # quanto pesa un file nella chat
 ```
 
 Per i lavori automatici c'è anche `claude-code/esempi/guardia.sh`: sveglia l'IA solo se c'è davvero qualcosa da fare.
@@ -171,25 +195,30 @@ Per i lavori automatici c'è anche `claude-code/esempi/guardia.sh`: sveglia l'IA
 
 ## Detto chiaro
 
-- **Su ChatGPT, Claude e Cowork** l'IA non vede il contatore vero dei consumi: le cifre degli avvisi sono stime. Bastano per decidere. Il blocco automatico esiste solo su Claude Code, perché solo lì si può agganciare un controllo prima che il messaggio parta.
+- **Nelle chat di ChatGPT, Claude e Codex** l'IA non vede il contatore vero dei consumi: le cifre degli avvisi sono stime. Bastano per decidere. Il blocco automatico esiste solo dove l'app permette controlli agganciati (Claude Code e Cowork).
+- **La skill autonoma la attiva il modello.** Riconosce i segnali quasi sempre, ma non è una garanzia: per questo conviene affiancarle il blocco nelle istruzioni personalizzate.
 - **La regola non vale sempre.** Una chat lunga conviene ancora se stai facendo lo stesso lavoro e ti serve tutto quel contesto. FreeToken ti avvisa, la decisione resta tua.
 - **Privacy.** Niente esce dal tuo computer. Su Claude Code il registro dei risparmi sta in `~/.freetoken/` e non contiene i tuoi testi.
 
 ## Cosa c'è nella cartella
 
 ```
-freetoken/
-├── INCOLLA-QUESTO.txt   il blocco da incollare, vale ovunque
-├── STRATEGIE.md         le 23 strategie con esempi prima e dopo
-├── chatgpt/             il GPT completo e la guida
-├── claude/              la skill per chat, app e Cowork, e la guida
-├── cowork/              la guardia per le attività programmate
-├── codex/               le istruzioni per Codex
-├── claude-code/         il pilota automatico
-├── scarica/             la skill pronta da caricare in Claude
-├── strumenti/           il calcolatore gratuito
-├── assets/              le immagini di questa pagina
-└── tests/               il collaudo del pilota automatico
+FreeToken/
+├── INCOLLA-QUESTO.txt        il blocco da incollare, vale ovunque
+├── STRATEGIE.md              le 23 strategie con esempi prima e dopo
+├── plugins/freetoken/        IL PLUGIN (Claude, ChatGPT, Codex)
+│   ├── skills/freetoken/     la skill che interviene da sola, con il calcolatore
+│   ├── commands/             /nota  /riparti  /asciutto
+│   ├── claude-hooks/         il pilota automatico per Claude Code e Cowork
+│   └── scripts/              conto, audit, pagella, barra
+├── .claude-plugin/           il catalogo per Claude
+├── .agents/plugins/          il catalogo per ChatGPT e Codex
+├── chatgpt/ claude/ codex/ cowork/   le guide passo passo
+├── claude-code/              installazione a mano ed esempi
+├── scarica/                  la skill in zip, per chi non usa i plugin
+├── strumenti/                il calcolatore gratuito
+├── assets/                   le immagini di questa pagina
+└── tests/                    il collaudo
 ```
 
 ## Chi ha creato FreeToken

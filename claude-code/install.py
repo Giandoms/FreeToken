@@ -3,6 +3,7 @@
 Installa FreeToken in Claude Code senza passare dai plugin.
 
   python3 install.py            installa agganci, barra di stato e comandi /nota /riparti /asciutto
+  python3 install.py --solo-barra  solo la barra di stato (se FreeToken è già installato come plugin)
   python3 install.py --rimuovi  toglie tutto e rimette la tua barra di stato di prima
 
 Prima di toccare ~/.claude/settings.json ne fa una copia di sicurezza.
@@ -14,7 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-QUI = Path(__file__).resolve().parent
+QUI = Path(__file__).resolve().parent.parent / "plugins" / "freetoken"
 CLAUDE = Path.home() / ".claude"
 IMPOSTAZIONI = CLAUDE / "settings.json"
 DATI = Path(os.environ.get("FREETOKEN_HOME", "~/.freetoken")).expanduser()
@@ -58,10 +59,10 @@ def salva_config(c):
     (DATI / "config.json").write_text(json.dumps(c, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def installa():
+def installa(solo_barra=False):
     s = carica()
     hooks = s.setdefault("hooks", {})
-    for ev, matcher in EVENTI.items():
+    for ev, matcher in ({} if solo_barra else EVENTI).items():
         gruppi = [g for g in hooks.get(ev, []) if not nostro(g)]
         g = {"hooks": [{"type": "command", "command": CMD, "timeout": 10}]}
         if matcher:
@@ -78,12 +79,13 @@ def installa():
     salva_config(c)
     s["statusLine"] = {"type": "command", "command": BARRA, "refreshInterval": 5}
 
-    comandi = CLAUDE / "commands"
-    comandi.mkdir(parents=True, exist_ok=True)
-    for f in (QUI / "commands").glob("*.md"):
-        shutil.copy2(f, comandi / f.name)
+    if not solo_barra:
+        comandi = CLAUDE / "commands"
+        comandi.mkdir(parents=True, exist_ok=True)
+        for f in (QUI / "commands").glob("*.md"):
+            shutil.copy2(f, comandi / f.name)
 
-    calc = QUI.parent / "strumenti" / "calcolatore.html"
+    calc = QUI / "skills" / "freetoken" / "calcolatore.html"
     if calc.exists():
         DATI.mkdir(parents=True, exist_ok=True)
         shutil.copy2(calc, DATI / "calcolatore.html")
@@ -119,4 +121,4 @@ def rimuovi():
 
 
 if __name__ == "__main__":
-    rimuovi() if "--rimuovi" in sys.argv else installa()
+    rimuovi() if "--rimuovi" in sys.argv else installa(solo_barra="--solo-barra" in sys.argv)
