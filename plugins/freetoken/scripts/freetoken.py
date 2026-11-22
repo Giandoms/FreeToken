@@ -622,12 +622,14 @@ def evento_inizio(d):
         if ctx >= CFG["cache_fredda_soglia_token"]:
             minuti = int((d.get("seconds_since_last_response") or 0) / 60)
             costo = d.get("estimated_cache_write_usd")
-            costo_txt = (f"~{euro(costo * CFG['cambio_usd_eur'])}" if isinstance(costo, (int, float))
-                         else f"~{euro(eur(ctx * 1.25))}")
+            costo_eur = (costo * CFG['cambio_usd_eur'] if isinstance(costo, (int, float))
+                         else eur(ctx * CFG["moltiplicatore_scrittura_cache"]))
+            costo_txt = f"~{euro(costo_eur)}"
+            nota_eur = eur(CFG["nota_token"] * CFG["moltiplicatore_scrittura_cache"])
             registra(sid, "ripresa_fredda", ctx, ctx * CFG["moltiplicatore_scrittura_cache"], fonte)
             avvisi.append(f"Stai riprendendo una sessione da ~{k(ctx)} token ferma da {minuti} min: "
                           f"il primo messaggio la riscrive tutta ({costo_txt}). Se c'è la nota: /clear e /riparti. "
-                          f"Risparmi: {risparmio((ctx - CFG['nota_token']) * CFG['moltiplicatore_scrittura_cache'])}.")
+                          f"Risparmi: circa {euro(max(costo_eur - nota_eur, 0))} su questo messaggio.")
 
     # Ripartenza pulita dopo un nostro avviso: risparmio misurato
     marcatore = DATI / "in_attesa" / (hashlib.md5(cwd.encode()).hexdigest() + ".json")
