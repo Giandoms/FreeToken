@@ -1,11 +1,27 @@
 {
   "name": "freetoken",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Ti avvisa quando la chat con l'IA consuma troppo e ti dice cosa fare. In Claude Code e Cowork lavora da solo: legge i consumi veri, ferma gli sprechi e ti fa il conto del risparmio.",
-  "author": { "name": "Giando Santamaria", "url": "https://www.giandosantamaria.it" },
+  "author": {
+    "name": "Giando Santamaria",
+    "url": "https://www.giandosantamaria.it"
+  },
   "homepage": "https://github.com/Giandoms/FreeToken",
   "repository": "https://github.com/Giandoms/FreeToken",
   "license": "MIT",
-  "keywords": ["token", "consumi", "limiti", "risparmio", "cache", "contesto"],
-  "hooks": "./claude-hooks/hooks.json"
+  "keywords": [
+    "token",
+    "consumi",
+    "limiti",
+    "risparmio",
+    "cache",
+    "contesto"
+  ],
+  "hooks": "./claude-hooks/hooks.json",
+  "displayName": "FreeToken",
+  "icon": "./assets/logo.png",
+  "documentationUrl": "https://github.com/Giandoms/FreeToken#readme",
+  "supportUrl": "https://github.com/Giandoms/FreeToken/issues",
+  "privacyPolicyUrl": "https://giandoms.github.io/FreeToken/privacy.html",
+  "termsOfServiceUrl": "https://giandoms.github.io/FreeToken/termini.html"
 }
