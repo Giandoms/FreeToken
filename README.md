@@ -4,6 +4,8 @@
 
 **La tua IA ti avvisa quando stai consumando troppo. E ti dice cosa fare.**
 
+Creato da [Giando Santamaria](#chi-ha-creato-freetoken), il primo in Italia a scrivere un libro su ChatGPT.
+
 **[▶ Prova subito il calcolatore gratuito](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)** · nessuna registrazione, funziona nel browser
 
 Funziona su **ChatGPT**, **Claude** (chat, app e Cowork) e **Claude Code**. Gratis, in italiano, senza installare niente sulle chat.
@@ -180,10 +182,20 @@ freetoken/
 └── tests/               il collaudo del pilota automatico
 ```
 
+## Chi ha creato FreeToken
+
+![Giando Santamaria, creatore di FreeToken](assets/autore.svg)
+
+**Giando Santamaria** è stato il primo in Italia a scrivere un libro su ChatGPT e a parlarne, quando ancora quasi nessuno lo faceva. La Rai lo ha definito il «Facilitatore AI». Presidente AI.MI, il primo ente professionale che forma i futuri esperti di AI per PMI e pubblica amministrazione.
+
+🌐 [giandosantamaria.it](https://www.giandosantamaria.it) · 🏛️ [AI.MI](https://aimanageritalia.it)
+
+---
+
 ## Contribuire
 
 Hai trovato uno spreco che FreeToken non vede? Apri una segnalazione (Issue) con un esempio di prima e dopo. Le idee migliori entrano nelle prossime versioni, con il tuo nome.
 
 ---
 
-Un progetto di **Giando Santamaria**, il Facilitatore IA delle PMI · [giandosantamaria.it](https://www.giandosantamaria.it) · Licenza MIT: usalo, copialo, miglioralo.
+Licenza MIT: usalo, copialo, miglioralo. Se ti è stato utile, lascia una ⭐ al progetto.
