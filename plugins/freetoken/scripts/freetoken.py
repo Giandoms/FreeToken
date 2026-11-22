@@ -33,7 +33,9 @@ PREDEFINITI = {
     "lettura_blocco_token": 12000,       # file letti interi sopra questa soglia vengono fermati
     "lettura_righe_consigliate": 300,
     "uscita_pesante_token": 10000,
-    "cache_fredda_soglia_token": 50000,  # sotto questa soglia riscrivere la cache costa poco
+    "cache_fredda_soglia_token": 50000,
+    "durata_sconto_secondi": 300,       # quanto resta valido lo sconto dopo l'ultima risposta
+    "nota_token": 3000,                 # peso di una nota di ripartenza  # sotto questa soglia riscrivere la cache costa poco
     "grazie_soglia_token": 60000,
     "soglie_chat_percento": [50, 70, 85],
     "claude_md_righe_max": 120,
@@ -150,6 +152,11 @@ def euro(valore):
     if valore < 0.01:
         return "meno di 1 centesimo"
     return f"{valore:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def risparmio(equivalenti):
+    """La riga 'Risparmi' di ogni avviso: token e euro insieme."""
+    return f"circa {k(equivalenti)} token, cioè circa {euro(eur(equivalenti))}"
 
 
 def costo_sessione(fam, richieste=None):
@@ -314,22 +321,33 @@ def situazione(dati, st):
     MODELLO["famiglia"] = famiglia(s.get("modello")) or famiglia(dati.get("model")) or \
         famiglia(st.get("modello")) or MODELLO["famiglia"]
     adesso = time.time()
+    # L'ultima risposta vera dell'IA, dal registro della chat. Serve anche quando la barra di stato
+    # esiste: nell'app desktop la barra non si aggiorna a ogni risposta e il suo dato può essere
+    # vecchio di ore (era il bug del "pausa di 126 minuti" a chat appena usata).
+    u = ultimo_uso_da_transcript(dati.get("transcript_path", "")) or {}
+    MODELLO["famiglia"] = MODELLO["famiglia"] or famiglia(u.get("modello"))
+    ultima = u.get("ultima_risposta")
+    durata = CFG["durata_sconto_secondi"]
     if s and adesso - s.get("aggiornato", 0) < 6 * 3600:
         pc = s.get("prompt_cache") or {}
+        scade = pc.get("expires_at")
+        if scade and scade - s.get("aggiornato", 0) > 600:
+            durata = 3600  # la sessione usa lo sconto da un'ora
+        if ultima and (not scade or ultima + durata > scade):
+            scade = ultima + durata  # l'IA ha risposto dopo l'ultima lettura della barra
         return {
-            "contesto": s.get("contesto", 0),
+            "contesto": max(s.get("contesto", 0), u.get("contesto", 0)),
             "finestra": s.get("finestra") or CFG["finestra_contesto"],
-            "scade": pc.get("expires_at"),
+            "scade": scade,
+            "ultima_risposta": ultima,
             "riscrittura": pc.get("recache_tokens_if_cold") or s.get("contesto", 0),
             "richieste": pc.get("requests"),
             "fonte": "barra",
         }
-    u = ultimo_uso_da_transcript(dati.get("transcript_path", "")) or {}
-    MODELLO["famiglia"] = MODELLO["famiglia"] or famiglia(u.get("modello"))
-    scade = (u["ultima_risposta"] + 300) if u.get("ultima_risposta") else None  # ipotesi: cache 5 minuti
+    scade = (ultima + durata) if ultima else None
     return {"contesto": u.get("contesto", 0), "finestra": CFG["finestra_contesto"],
-            "scade": scade, "riscrittura": u.get("contesto", 0), "richieste": None,
-            "fonte": "transcript"}
+            "scade": scade, "ultima_risposta": ultima, "riscrittura": u.get("contesto", 0),
+            "richieste": None, "fonte": "transcript"}
 
 
 def sembra_log(testo):
@@ -382,13 +400,21 @@ def evento_prompt(d):
         righe = p.count("\n") + 1
         cosa = "un log" if sembra_log(p) else "un testo"
         costo = peso(t, CFG["richieste_medie_dopo"])
-        consiglio = ("incolla solo l'errore e le ultime 30 righe." if cosa == "un log"
-                     else "salvalo in un file e chiedi di leggere solo la parte che ti serve.")
-        testo = (f"Stai incollando {cosa} di {num(righe)} righe.\n"
-                 f"   Perché: resterebbe nella chat fino alla fine e lo pagheresti a ogni risposta "
-                 f"(circa {k(costo)} token, {euro(eur(costo))}).\n"
+        if cosa == "un log":
+            utile = peso(int(t * min(30, righe) / max(righe, 1)), CFG["richieste_medie_dopo"])
+            battuta = f"All'IA ne bastano 30: le altre {num(max(righe - 30, 0))} sono soprammobili."
+            consiglio = "incolla solo l'errore e le ultime 30 righe."
+        else:
+            utile = costo / 5
+            battuta = "L'IA lo rileggerà a ogni risposta, come chi racconta sempre la stessa storia a cena."
+            consiglio = "incolla solo la parte che ti serve, oppure salvalo in un file e chiedi di leggerne un pezzo."
+        testo = (f"Stai incollando {cosa} di {num(righe)} righe. {battuta}\n"
+                 f"   Perché: resta nella chat fino alla fine e lo paghi a ogni risposta "
+                 f"(circa {k(costo)} token, circa {euro(eur(costo))}).\n"
                  f"   Cosa fare: {consiglio}\n"
-                 f"   Ti serve davvero tutto? Rimandalo iniziando con {CFG['prefisso_forza']}")
+                 f"   Risparmi: {risparmio(costo - utile)}.\n"
+                 f"   Ti serve davvero tutto? Premi \"Modifica prompt\" e rimandalo iniziando con "
+                 f"{CFG['prefisso_forza']}")
         if rigida:
             registra(sid, "incolla_bloccato", t, costo, cosa, sit.get("richieste"))
             scrivi_stato(sid, st)
@@ -402,14 +428,19 @@ def evento_prompt(d):
     if scade and adesso > scade and riscr >= CFG["cache_fredda_soglia_token"] \
             and st.get("cache_avvisata") != scade:
         st["cache_avvisata"] = scade
-        minuti = int((adesso - scade) / 60) + 1
+        ultima = sit.get("ultima_risposta")
+        minuti = int((adesso - ultima) / 60) if ultima else int((adesso - scade) / 60) + 5
         costo = riscr * CFG["moltiplicatore_scrittura_cache"]
-        testo = (f"Hai fatto una pausa e lo sconto sulla chat è scaduto ({minuti} min fa).\n"
-                 f"   Perché: finché lavori la chat costa circa un decimo; dopo la pausa questo messaggio "
-                 f"la rilegge tutta a prezzo pieno (circa {k(riscr)} token, {euro(eur(costo))}).\n"
-                 f"   Cosa fare: /clear e poi /riparti (riparti dalla nota, quasi gratis). "
+        dopo = CFG["nota_token"] * CFG["moltiplicatore_scrittura_cache"]
+        testo = (f"Pausa di {minuti} min: lo sconto sulla chat è scaduto. Il caffè l'hai pagato tu, "
+                 f"la rilettura la paga questo messaggio.\n"
+                 f"   Perché: mentre lavori la chat costa circa un decimo; dopo una pausa questo messaggio "
+                 f"la rilegge tutta a prezzo pieno (circa {k(riscr)} token, circa {euro(eur(costo))}).\n"
+                 f"   Cosa fare: /clear e poi /riparti, così riparti dalla nota e non da tutta la chat. "
                  f"Nessuna nota? Dopo /clear scrivi tu in 5 righe dove eri.\n"
-                 f"   Vuoi continuare qui lo stesso? Rimanda il messaggio.")
+                 f"   Risparmi: {risparmio(costo - dopo)} su questo solo messaggio.\n"
+                 f"   Vuoi continuare qui lo stesso? Premi \"Modifica prompt\" e invia di nuovo: "
+                 f"il secondo invio passa.")
         Path(DATI / "in_attesa").mkdir(parents=True, exist_ok=True)
         marcatore = DATI / "in_attesa" / (hashlib.md5(d.get("cwd", "").encode()).hexdigest() + ".json")
         marcatore.write_text(json.dumps({"ts": int(adesso), "riscrittura": riscr, "sid": sid}))
@@ -425,18 +456,25 @@ def evento_prompt(d):
     for s in sorted(CFG["soglie_chat_percento"], reverse=True):
         if pct >= s and s not in fatte:
             fatte.update(x for x in CFG["soglie_chat_percento"] if x <= s)
+            n = CFG["richieste_medie_dopo"]
+            leggero = risparmio(max(ctx - CFG["nota_token"], 0) * CFG["moltiplicatore_lettura_cache"] * n)
             if s >= 85:
-                avvisi.append(f"🔴 Chat piena all'{pct}%.\n   Perché: tra poco Claude la riassume da solo, "
-                              f"in fretta e perdendo pezzi, e intanto ogni messaggio costa il massimo.\n"
-                              f"   Cosa fare adesso: /nota, poi /clear, poi /riparti.")
+                avvisi.append(f"🔴 Chat piena all'{pct}%. Tra poco Claude la riassume da solo, in fretta, "
+                              f"come un verbale scritto all'ultimo minuto.\n"
+                              f"   Perché: nel riassunto si perdono pezzi, e intanto ogni messaggio costa il massimo.\n"
+                              f"   Cosa fare adesso: /nota, poi /clear, poi /riparti.\n"
+                              f"   Risparmi: {leggero} nei prossimi {n} messaggi.")
             elif s >= 70:
-                avvisi.append(f"🟠 Chat al {pct}%.\n   Perché: Claude rilegge troppe cose vecchie, "
-                              f"le risposte peggiorano e ogni messaggio costa di più.\n"
+                avvisi.append(f"🟠 Chat al {pct}%. Claude ora rilegge più storia che lavoro.\n"
+                              f"   Perché: le cose vecchie confondono le risposte e ogni messaggio costa di più.\n"
                               f"   Cosa fare: hai cambiato lavoro? /nota, /clear, /riparti. "
-                              f"Stesso lavoro? /compact tieni solo decisioni, file aperti e prossimo passo")
+                              f"Stesso lavoro? /compact tieni solo decisioni, file aperti e prossimo passo.\n"
+                              f"   Risparmi ripartendo: {leggero} nei prossimi {n} messaggi.")
             else:
-                avvisi.append(f"🟡 Chat a metà ({pct}%).\n   Perché: ogni messaggio ora si porta dietro tutto questo.\n"
-                              f"   Cosa fare: stesso lavoro? Continua. Lavoro nuovo? /nota e /clear.")
+                avvisi.append(f"🟡 Chat a metà ({pct}%). Da qui ogni messaggio si porta dietro tutto, "
+                              f"come uno zaino che nessuno svuota.\n"
+                              f"   Cosa fare: stesso lavoro? Continua pure. Lavoro nuovo? /nota e /clear.\n"
+                              f"   Risparmi ripartendo: {leggero} nei prossimi {n} messaggi.")
             break
     st["soglie"] = sorted(fatte)
 
@@ -446,22 +484,28 @@ def evento_prompt(d):
             re.fullmatch(r"(grazie|ok|okay|perfetto|bene|ottimo|top|va bene|si|sì|👍|🙏)[\s!.,👍🙏]*.*", corto):
         equivalente = ctx * CFG["moltiplicatore_lettura_cache"]
         registra(sid, "grazie_costoso", ctx, equivalente, corto, sit.get("richieste"))
-        avvisi.append(f"Hai scritto solo \"{p.strip()[:20]}\".\n   Perché costa: anche così Claude rilegge tutta la chat "
-                      f"(circa {k(equivalente)} token).\n"
-                      f"   Cosa fare: il grazie mettilo nel messaggio con la prossima richiesta.")
+        avvisi.append(f"Hai scritto solo \"{p.strip()[:20]}\". Gentile, ma è il galateo più caro d'Italia.\n"
+                      f"   Perché: per leggerlo Claude rilegge tutta la chat.\n"
+                      f"   Cosa fare: il grazie mettilo nel messaggio con la prossima richiesta.\n"
+                      f"   Risparmi: {risparmio(equivalente)} ogni volta.")
 
     # 5. Richieste di file interi
     if re.search(r"(riscriv\w*|dammi|mostra\w*|rigenera\w*|stampa\w*)\s+(tutto\s+)?(il\s+|l')?"
                  r"(file|codice|documento)\s+(completo|intero|per intero|da capo)|"
                  r"(tutto|intero)\s+il\s+file", p, re.I):
-        avvisi.append("Rifare tutto il file costa caro: le risposte lunghe si pagano di più "
-                      "e restano nella chat.\n   Cosa fare: chiedi \"applica solo le modifiche e dimmi le righe toccate\".")
+        uscita_evitata = 2400 * CFG["moltiplicatore_output"]  # 8 righe su 10 di un file medio
+        avvisi.append("Rifare tutto il file per una modifica piccola è come ristampare il libro per un refuso.\n"
+                      "   Perché: le risposte costano 5 volte le domande e poi restano nella chat.\n"
+                      "   Cosa fare: chiedi \"applica solo le modifiche e dimmi le righe toccate\".\n"
+                      f"   Risparmi: {risparmio(uscita_evitata)} a risposta, su un file medio.")
 
     # 6. Richieste vaghe che fanno esplorare tutto
     if re.search(r"\b(guarda tu|vedi tu|controlla tutto|cerca nel progetto|dove sta|da qualche parte|"
                  r"non so dove)\b", p, re.I) and not re.search(r"[\w/-]+\.\w{1,5}", p):
-        avvisi.append("Senza dire dove, Claude deve frugare in tutto il progetto e la chat si riempie.\n"
-                      "   Cosa fare: se lo sai, indica il file e la riga (es. src/app.py riga 120).")
+        avvisi.append("Senza dire dove, Claude parte per una caccia al tesoro pagata a token.\n"
+                      "   Perché: apre file su file per trovare il punto, e tutto quello che legge resta nella chat.\n"
+                      "   Cosa fare: se lo sai, indica il file e la riga (es. src/app.py riga 120).\n"
+                      f"   Risparmi: di solito {risparmio(peso(30000, CFG['richieste_medie_dopo']))}.")
 
     # 7. Il modello giusto per il lavoro (una volta per sessione, con il risparmio in euro)
     if not avvisi:
@@ -506,19 +550,21 @@ def evento_pre_strumento(d):
             nega(f"Il file {percorso} è un file generato o pesante (dipendenze, build, lock, dati). "
                  f"Leggerlo intero riempie il contesto. Usa Grep per cercare ciò che serve, oppure Read "
                  f"con offset e limit sulle righe utili.",
-                 f"Fermata la lettura di {Path(percorso).name} (file pesante, ~{k(t)} token). "
-                 f"Claude cercherà solo la parte che serve.",
+                 f"Fermata la lettura di {Path(percorso).name} (file pesante, ~{k(t)} token): Claude stava "
+                 f"per leggersi l'elenco telefonico per trovare un numero. Ora cerca solo la parte che serve. "
+                 f"Risparmi: {risparmio(peso(t, CFG['richieste_medie_dopo']))}.",
                  "lettura_bloccata", t, peso(t, CFG["richieste_medie_dopo"]), percorso)
         t, righe = token_file(percorso)
         if t >= CFG["lettura_blocco_token"]:
             consigliati = tok(int(CFG["lettura_righe_consigliate"] * (t * CFG["caratteri_per_token"] / max(min(righe, 2000), 1))))
-            risparmio = max(t - consigliati, 0)
+            risparmio_t = max(t - consigliati, 0)
             nega(f"{percorso} ha {righe} righe (~{t} token). Prima usa Grep per trovare la sezione "
                  f"rilevante, poi Read con offset e limit (circa {CFG['lettura_righe_consigliate']} righe). "
                  f"Se ti serve davvero tutto, rileggilo: la seconda richiesta passa.",
-                 f"Fermata la lettura intera di {Path(percorso).name}: {num(righe)} righe, ~{k(t)} token. "
-                 f"Claude leggerà solo la parte utile.",
-                 "lettura_bloccata", risparmio, peso(risparmio, CFG["richieste_medie_dopo"]), percorso)
+                 f"Fermata la lettura intera di {Path(percorso).name}: {num(righe)} righe per trovarne "
+                 f"una manciata. Claude leggerà solo la parte utile. "
+                 f"Risparmi: {risparmio(peso(risparmio_t, CFG['richieste_medie_dopo']))}.",
+                 "lettura_bloccata", risparmio_t, peso(risparmio_t, CFG["richieste_medie_dopo"]), percorso)
         esci()
 
     if nome == "Bash":
@@ -531,7 +577,8 @@ def evento_pre_strumento(d):
                 sit = situazione(d, st)
                 nega(f"cat di {righe} righe (~{t} token) riempie il contesto. Usa grep -n, head, tail "
                      f"o sed -n 'A,Bp' sulle righe utili.",
-                     f"Fermato un cat da ~{k(t)} token su {Path(percorso).name}.",
+                     f"Fermato un cat da ~{k(t)} token su {Path(percorso).name}: tutto il file per vederne "
+                     f"un pezzo. Risparmi: {risparmio(peso(t, CFG['richieste_medie_dopo']))}.",
                      "cat_bloccato", t, peso(t, CFG["richieste_medie_dopo"]), percorso)
     esci()
 
@@ -552,8 +599,11 @@ def evento_post_strumento(d):
     registra(sid, "uscita_pesante", t, peso(t, CFG["richieste_medie_dopo"]), nome, sit.get("richieste"))
     dove = ("di un connettore: chiedi meno risultati (limite, filtri, date)" if nome.startswith("mcp__")
             else "filtra alla fonte: grep, head, --limit, --quiet")
-    avvisa([f"{nome} ha portato nella chat un risultato enorme (circa {k(t)} token) che ora resta lì.\n"
-            f"   Cosa fare la prossima volta: {dove}."])
+    avvisa([f"{nome} ha rovesciato nella chat circa {k(t)} token, che ora restano lì come ospiti "
+            f"che non se ne vanno.\n"
+            f"   Perché: li rileggi a ogni risposta fino alla fine della chat.\n"
+            f"   Cosa fare la prossima volta: {dove}.\n"
+            f"   Risparmi: {risparmio(peso(t, CFG['richieste_medie_dopo']) * 0.8)} filtrando alla fonte."])
 
 
 def evento_inizio(d):
@@ -576,7 +626,8 @@ def evento_inizio(d):
                          else f"~{euro(eur(ctx * 1.25))}")
             registra(sid, "ripresa_fredda", ctx, ctx * CFG["moltiplicatore_scrittura_cache"], fonte)
             avvisi.append(f"Stai riprendendo una sessione da ~{k(ctx)} token ferma da {minuti} min: "
-                          f"il primo messaggio la riscrive tutta ({costo_txt}). Se c'è la nota: /clear e /riparti.")
+                          f"il primo messaggio la riscrive tutta ({costo_txt}). Se c'è la nota: /clear e /riparti. "
+                          f"Risparmi: {risparmio((ctx - CFG['nota_token']) * CFG['moltiplicatore_scrittura_cache'])}.")
 
     # Ripartenza pulita dopo un nostro avviso: risparmio misurato
     marcatore = DATI / "in_attesa" / (hashlib.md5(cwd.encode()).hexdigest() + ".json")
@@ -586,10 +637,11 @@ def evento_inizio(d):
             if time.time() - m.get("ts", 0) < 3600:
                 nota = Path(cwd) / "NOTA-SESSIONE.md"
                 t_nota = tok(nota.read_text(encoding="utf-8", errors="ignore")) if nota.exists() else 1000
-                risparmio = max(m.get("riscrittura", 0) - t_nota, 0)
-                registra(sid, "cache_fredda_evitata", risparmio,
-                         risparmio * CFG["moltiplicatore_scrittura_cache"], cwd)
-                avvisi.append(f"Ripartenza pulita: hai evitato di riscrivere ~{k(risparmio)} token. "
+                evitati = max(m.get("riscrittura", 0) - t_nota, 0)
+                registra(sid, "cache_fredda_evitata", evitati,
+                         evitati * CFG["moltiplicatore_scrittura_cache"], cwd)
+                avvisi.append(f"Ripartenza pulita. Hai appena risparmiato "
+                              f"{risparmio(evitati * CFG['moltiplicatore_scrittura_cache'])}. "
                               f"Usa /riparti per caricare la nota.")
         except Exception:
             pass
@@ -621,8 +673,10 @@ def evento_inizio(d):
 def evento_compattazione(d):
     if d.get("trigger") == "auto":
         registra(d.get("session_id", ""), "compattazione_auto", 0, 0, "")
-        avvisa(["Auto-compattazione al limite: riassume tutto in fretta e perde dettagli. "
-                "La prossima volta: /compact con istruzioni verso metà chat, o /nota e /clear."])
+        avvisa(["Riassunto automatico al limite: Claude ha fatto le valigie in fretta e qualcosa è "
+                "rimasto nell'armadio.\n   Perché: il riassunto d'emergenza perde dettagli e decisioni.\n"
+                "   Cosa fare la prossima volta: /compact con istruzioni verso metà chat, oppure /nota e /clear.\n"
+                "   Risparmi: ripartendo dalla nota rileggi 20 righe invece della chat intera."])
     esci()
 
 
@@ -633,7 +687,8 @@ def evento_cambio_modello(d):
     if ctx >= 20000:
         registra(sid, "cambio_modello", ctx, ctx * CFG["moltiplicatore_scrittura_cache"], "")
         situazione(d, leggi_stato(sid))
-        avvisa([f"La cache vale per un solo modello: cambiandolo adesso il prossimo messaggio riscrive "
+        avvisa([f"Cambiare modello a metà chat è come cambiare cuoco a metà cena: il nuovo riassaggia tutto. "
+                f"Lo sconto vale per un solo modello, quindi il prossimo messaggio riscrive "
                 f"~{k(ctx)} token (circa {euro(eur(ctx * CFG['moltiplicatore_scrittura_cache']))}). Meglio: tieni il modello e passa i lavori semplici a un subagent "
                 f"con il modello piccolo."])
     esci()

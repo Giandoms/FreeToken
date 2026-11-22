@@ -4,7 +4,9 @@ Lavora come sempre. In fondo alla risposta aggiungi un avviso SOLO quando la ses
 
 [🟡 o 🟠 o 🔴] FreeToken · [cosa succede]
 Perché: [perché costa o peggiora, in parole semplici]
-Cosa fare: [una sola azione] · Risparmi: [cifra in euro, con la base del calcolo]
+Cosa fare: [una sola azione] · Risparmi: [token ed euro, es. "circa 50k token, cioè circa 0,18 €"]
+
+Se ci sta, una battuta breve sull'abitudine nella prima riga, mai sulla persona.
 
 Semaforo (ogni colore una volta sola per sessione):
 - 🟡 sessione a metà (tanti file letti o ~15 richieste): "da qui ogni passo rilegge tutto questo". Cosa fare: "/status per vedere quanto resta; se hai cambiato lavoro, /new".

@@ -56,6 +56,26 @@ verifica("blocca a cache fredda", '"decision": "block"' in out and "sconto" in o
 out = gira("freetoken.py", {**base, "hook_event_name": "UserPromptSubmit", "prompt": "continua col punto 3"}, "hook")
 verifica("al secondo invio passa (con avviso soglia)", "block" not in out and "70%" in out, out[:300])
 
+print("Barra vecchia ma chat appena usata (bug dei 126 minuti)")
+vecchia = {**barra, "session_id": "prova126"}
+vecchia["prompt_cache"] = {**barra["prompt_cache"], "expires_at": int(time.time()) - 126 * 60}
+gira("barra.py", vecchia)
+tr = TMP / "t126.jsonl"
+from datetime import datetime, timezone
+tr.write_text(json.dumps({"type": "assistant", "timestamp": datetime.now(timezone.utc).isoformat(),
+                          "message": {"model": "claude-opus-5-5", "usage": {"input_tokens": 10,
+                          "cache_read_input_tokens": 300000}}}) + "\n")
+out = gira("freetoken.py", {**base, "session_id": "prova126", "transcript_path": str(tr),
+                           "hook_event_name": "UserPromptSubmit", "prompt": "sì, procedi"}, "hook")
+verifica("non blocca se l'IA ha appena risposto", "block" not in out, out[:300])
+vecchio = (datetime.now(timezone.utc).timestamp() - 20 * 60)
+tr.write_text(json.dumps({"type": "assistant", "timestamp": datetime.fromtimestamp(vecchio, timezone.utc).isoformat(),
+                          "message": {"usage": {"input_tokens": 10, "cache_read_input_tokens": 300000}}}) + "\n")
+out = gira("freetoken.py", {**base, "session_id": "prova126b", "transcript_path": str(tr),
+                           "hook_event_name": "UserPromptSubmit", "prompt": "sì, procedi"}, "hook")
+verifica("blocca dopo una pausa vera, con minuti giusti ed euro", "block" in out and "Pausa di 20 min" in out
+         and "€" in out and "Modifica prompt" in out, out[:400])
+
 print("Ripartenza pulita misurata")
 out = gira("freetoken.py", {"session_id": "prova2", "cwd": str(TMP), "hook_event_name": "SessionStart",
                         "source": "clear"}, "hook")
