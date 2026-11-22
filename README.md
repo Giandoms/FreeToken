@@ -159,6 +159,8 @@ Il conto alla rovescia (`⏳ 3:12`) è il dato che nessuno ti mostra: finché sc
 |---|---|
 | `/nota` | salva in 20 righe dove sei arrivato |
 | `/riparti` | dopo `/clear`, riparte dalla nota invece che da 150 messaggi |
+| `/quanto` | quanto pesa la chat in token ed euro, e se conviene ripartire |
+| `/modello` | quale modello conviene per il lavoro in corso e quanti euro risparmi |
 | `/asciutto` | da qui in avanti risposte brevi e modifiche mirate |
 
 ### Il conto del risparmio
