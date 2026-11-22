@@ -184,7 +184,7 @@ freetoken/
 
 ## Chi ha creato FreeToken
 
-![Giando Santamaria, creatore di FreeToken](assets/autore.svg)
+![Giando Santamaria, creatore di FreeToken](assets/giando-santamaria.svg)
 
 **Giando Santamaria** è stato il primo in Italia a scrivere un libro su ChatGPT e a parlarne, quando ancora quasi nessuno lo faceva. La Rai lo ha definito il «Facilitatore AI». Presidente AI.MI, il primo ente professionale che forma i futuri esperti di AI per PMI e pubblica amministrazione.
 
