@@ -40,7 +40,7 @@ FreeToken è **un plugin**: un pacchetto unico, con dentro la skill che intervie
 
 | Dove lo usi | Come lo installi | Cosa ottieni |
 |---|---|---|
-| **Claude** (web, app, Cowork) | **Personalizza → Plugin → +** → *Aggiungi marketplace da GitHub* → scrivi `Giandoms/FreeToken` → aggiungi **FreeToken** | In chat: la skill che interviene da sola. In Cowork: anche il pilota automatico |
+| **Claude** (web, app, Cowork) | **Personalizza → Plugin → Aggiungi → Aggiungi marketplace → Aggiungi da un repository** → scrivi `Giandoms/FreeToken` → **Sincronizza** → **+** su Freetoken | In chat: la skill che interviene da sola. In Cowork: anche il pilota automatico |
 | **Claude Code** | Scrivi `/plugin install freetoken --marketplace Giandoms/FreeToken` | Il pilota automatico completo, con i numeri veri |
 | **Codex** | Nel Terminale: `codex plugin marketplace add Giandoms/FreeToken` e poi `codex plugin add freetoken@freetoken` | La skill che interviene da sola e i comandi |
 | **ChatGPT** | Dopo il comando qui sopra, FreeToken compare tra i plugin dell'app desktop di ChatGPT: aprilo e premi **+**. Nelle aziende, l'amministratore può importare il marketplace da GitHub per tutti | La skill che interviene da sola |

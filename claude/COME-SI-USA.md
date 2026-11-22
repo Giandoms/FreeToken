@@ -1,11 +1,11 @@
 # FreeToken su Claude (web, app e Cowork)
 
 ## 1. Installa il plugin (2 minuti, una volta sola)
-1. Apri Claude e clicca **Personalizza** nella barra a sinistra.
-2. Apri la scheda **Plugin**.
-3. Premi **+** e scegli **Aggiungi marketplace da GitHub**.
-4. Scrivi `Giandoms/FreeToken` e conferma.
-5. Nell'elenco compare **FreeToken**: premi **Aggiungi**.
+1. Apri Claude e vai su **Personalizza → Plugin**.
+2. Premi **Aggiungi** e scegli **Aggiungi marketplace**.
+3. Scegli **Aggiungi da un repository**, scrivi `Giandoms/FreeToken` e premi **Sincronizza**. Lascia acceso *Sincronizza automaticamente*: così ricevi gli aggiornamenti da solo.
+4. Compare **Freetoken**: premi **+**.
+5. Claude ti avvisa che il plugin contiene componenti che eseguono codice: sono i controlli automatici di FreeToken, che lavorano solo sul tuo computer e il cui codice è pubblico in questa pagina. Premi **Continua**.
 
 Il plugin vale per tutto il tuo account: chat sul web, app desktop, Cowork e anche Claude Code, se accedi con lo stesso account.
 
