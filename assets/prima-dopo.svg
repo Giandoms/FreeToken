@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+  <rect width="1200" height="560" fill="#f6f1e7"/>
+  <g font-family="Helvetica, Arial, sans-serif">
+    <text x="60" y="64" font-size="24" letter-spacing="3" fill="#6b645a">PERCHÉ FUNZIONA</text>
+    <text x="60" y="112" font-size="34" font-weight="800" fill="#141414">A ogni messaggio l'IA rilegge tutta la chat. Dall'inizio.</text>
+    <text x="60" y="186" font-size="26" font-weight="800" fill="#141414">PRIMA · la stessa chat da 3 giorni</text>
+    <g fill="#141414" opacity=".85">
+      <rect x="60" y="206" width="22" height="70"/><rect x="88" y="206" width="22" height="70"/><rect x="116" y="206" width="22" height="70"/><rect x="144" y="206" width="22" height="70"/><rect x="172" y="206" width="22" height="70"/><rect x="200" y="206" width="22" height="70"/><rect x="228" y="206" width="22" height="70"/><rect x="256" y="206" width="22" height="70"/><rect x="284" y="206" width="22" height="70"/><rect x="312" y="206" width="22" height="70"/><rect x="340" y="206" width="22" height="70"/><rect x="368" y="206" width="22" height="70"/><rect x="396" y="206" width="22" height="70"/><rect x="424" y="206" width="22" height="70"/><rect x="452" y="206" width="22" height="70"/><rect x="480" y="206" width="22" height="70"/><rect x="508" y="206" width="22" height="70"/><rect x="536" y="206" width="22" height="70"/><rect x="564" y="206" width="22" height="70"/><rect x="592" y="206" width="22" height="70"/><rect x="620" y="206" width="22" height="70"/><rect x="648" y="206" width="22" height="70"/><rect x="676" y="206" width="22" height="70"/><rect x="704" y="206" width="22" height="70"/><rect x="732" y="206" width="22" height="70"/><rect x="760" y="206" width="22" height="70"/><rect x="788" y="206" width="22" height="70"/><rect x="816" y="206" width="22" height="70"/>
+    </g>
+    <rect x="844" y="206" width="22" height="70" fill="#ff6a13"/>
+    <text x="890" y="252" font-size="22" fill="#141414">← la tua domanda</text>
+    <text x="60" y="310" font-size="22" fill="#6b645a">150 messaggi riletti per rispondere a uno. Lenta, cara, confusa.</text>
+    <text x="60" y="390" font-size="26" font-weight="800" fill="#141414">DOPO · «nota» e chat nuova</text>
+    <rect x="60" y="410" width="80" height="70" fill="#141414" opacity=".85"/>
+    <text x="100" y="452" font-size="18" font-weight="800" text-anchor="middle" fill="#f6f1e7">NOTA</text>
+    <rect x="146" y="410" width="22" height="70" fill="#ff6a13"/>
+    <text x="192" y="452" font-size="22" fill="#141414">← la tua domanda</text>
+    <text x="60" y="520" font-size="22" fill="#6b645a">10 righe con tutto quello che serve. Veloce, economica, precisa.</text>
+    <rect x="560" y="400" width="580" height="96" rx="16" fill="#fff3ea" stroke="#ff6a13" stroke-width="3"/>
+    <text x="590" y="440" font-size="24" font-weight="800" fill="#141414">Il Passaggio funziona anche tra IA diverse</text>
+    <text x="590" y="476" font-size="22" fill="#141414">Inizi su ChatGPT, continui su Claude. O il contrario.</text>
+  </g>
+</svg>

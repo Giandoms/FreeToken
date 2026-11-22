@@ -1,0 +1,24 @@
+# Progetto: [nome]
+
+Questo file viene letto a ogni richiesta: ogni riga si paga sempre. Tienilo sotto le 60 righe.
+
+## Cosa è
+[Due righe: cosa fa il progetto e per chi.]
+
+## Comandi
+- prove: `npm test -- --silent`
+- avvio: `npm run dev`
+
+## Regole che Claude non può indovinare
+- [es. I prezzi stanno in config/prezzi.json, mai nel codice]
+- [es. Niente librerie nuove senza chiedere]
+
+## Come lavorare
+- Modifiche mirate ai file, mai riscritture intere.
+- Prima di leggere un file grande, cerca con Grep e leggi solo le righe utili.
+- Risposte brevi: fatto / file toccati / cosa devo verificare.
+
+## Dove trovare il resto (leggere SOLO quando serve)
+- Architettura: docs/architettura.md
+- Decisioni passate: docs/decisioni.md
+- Stato del lavoro: NOTA-SESSIONE.md

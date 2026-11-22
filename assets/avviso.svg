@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+  <rect width="1200" height="560" fill="#f6f1e7"/>
+  <g font-family="Helvetica, Arial, sans-serif">
+    <text x="60" y="64" font-size="24" letter-spacing="3" fill="#6b645a">COSÌ LO VEDI MENTRE LAVORI</text>
+    <rect x="60" y="96" width="1080" height="420" rx="22" fill="#ffffff" stroke="#e2d9c8" stroke-width="2"/>
+    <rect x="640" y="130" width="460" height="56" rx="18" fill="#efe8da"/>
+    <text x="664" y="166" font-size="22" fill="#141414">Ora fammi anche il preventivo per Rossi</text>
+    <text x="100" y="236" font-size="22" fill="#141414">Ecco il preventivo per Rossi: 3 voci, totale 4.200 euro + IVA...</text>
+    <rect x="100" y="252" width="760" height="12" rx="6" fill="#efe8da"/>
+    <rect x="100" y="276" width="620" height="12" rx="6" fill="#efe8da"/>
+    <rect x="100" y="318" width="1000" height="160" rx="16" fill="#fff3ea" stroke="#ff6a13" stroke-width="3"/>
+    <rect x="100" y="318" width="10" height="160" fill="#ff6a13"/>
+    <circle cx="150" cy="362" r="20" fill="#ff6a13"/><text x="150" y="370" font-size="22" font-weight="900" text-anchor="middle" fill="#141414">T</text>
+    <text x="184" y="370" font-size="26" font-weight="800" fill="#141414">FreeToken · Questa chat è diventata pesante e da qui sbaglio di più.</text>
+    <text x="140" y="420" font-size="24" fill="#141414"><tspan font-weight="800">Cosa fare:</tspan> scrivi «nota» e riparti in una chat nuova</text>
+    <text x="140" y="458" font-size="24" fill="#141414"><tspan font-weight="800">Risparmi:</tspan> circa 5 volte meno a ogni risposta</text>
+    <text x="60" y="545" font-size="20" fill="#6b645a">Se va tutto bene, non dice niente.</text>
+  </g>
+</svg>

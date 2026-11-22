@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FreeToken · quanto pesa quello che mandi all'IA</title>
+<style>
+  :root { --carta:#f6f1e7; --inchiostro:#141414; --arancio:#ff6a13; --tenue:#6b645a; --bordo:#e2d9c8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--carta); color:var(--inchiostro); font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:32px 20px 60px; }
+  h1 { font:800 clamp(28px,6vw,44px)/1.05 "Arial Narrow",Arial,sans-serif; text-transform:uppercase; letter-spacing:-.5px; margin:0 0 8px; }
+  h1 span { background:linear-gradient(transparent 60%, rgba(255,106,19,.45) 60%); }
+  .sotto { color:var(--tenue); margin:0 0 28px; }
+  section { background:#fffdf8; border:1px solid var(--bordo); border-radius:14px; padding:20px; margin-bottom:20px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.06em; margin:0 0 12px; border-left:4px solid var(--arancio); padding-left:10px; }
+  textarea { width:100%; min-height:150px; border:1px solid var(--bordo); border-radius:10px; padding:12px; font:14px/1.4 ui-monospace,Menlo,monospace; background:var(--carta); resize:vertical; }
+  label { display:block; font-size:14px; color:var(--tenue); margin:14px 0 4px; }
+  input[type=range] { width:100%; accent-color:var(--arancio); }
+  input[type=number] { width:120px; padding:6px 8px; border:1px solid var(--bordo); border-radius:8px; font-size:15px; }
+  .cifre { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
+  .cifra { background:var(--carta); border-radius:10px; padding:12px; }
+  .cifra b { display:block; font-size:26px; font-variant-numeric:tabular-nums; }
+  .cifra small { color:var(--tenue); }
+  .verdetto { margin-top:14px; padding:12px 14px; border-left:4px solid var(--arancio); background:#fff3ea; border-radius:0 10px 10px 0; }
+  .riga { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+  footer { color:var(--tenue); font-size:13px; text-align:center; margin-top:30px; }
+  a { color:var(--inchiostro); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Quanto pesa la tua <span>chat</span>?</h1>
+  <p class="sotto">A ogni messaggio l'IA rilegge tutta la chat. Qui vedi quanto ti costa quello che incolli, e quanto risparmi ripartendo leggero. Tutto resta nel tuo browser.</p>
+
+  <section>
+    <h2>1. Incolla qui il testo, il log o il prompt</h2>
+    <textarea id="testo" placeholder="Incolla un log, un documento, un prompt..."></textarea>
+    <label for="dopo">Quanti messaggi farai ancora in questa chat? <b id="dopoVal">25</b></label>
+    <input type="range" id="dopo" min="1" max="150" value="25">
+    <div class="cifre">
+      <div class="cifra"><b id="tok">0</b><small>token stimati</small></div>
+      <div class="cifra"><b id="peso">0</b><small>token equivalenti nella chat</small></div>
+      <div class="cifra"><b id="soldi">0,00 $</b><small>se paghi a consumo</small></div>
+    </div>
+    <div class="verdetto" id="verdetto1">Incolla qualcosa per vedere il verdetto.</div>
+  </section>
+
+  <section>
+    <h2>2. Chat lunga o ripartenza con la nota?</h2>
+    <div class="riga">
+      <div><label for="chat">Peso della chat (token)</label><input type="number" id="chat" value="120000" step="5000"></div>
+      <div><label for="msg">Messaggi che mancano</label><input type="number" id="msg" value="20"></div>
+      <div><label for="nota">Nota di passaggio (righe)</label><input type="number" id="nota" value="20"></div>
+    </div>
+    <label><input type="checkbox" id="pausa"> Ho fatto una pausa più lunga di 5 minuti (cache scaduta)</label>
+    <div class="cifre">
+      <div class="cifra"><b id="tieni">0</b><small>se tieni la chat</small></div>
+      <div class="cifra"><b id="riparti">0</b><small>se riparti dalla nota</small></div>
+      <div class="cifra"><b id="risp">0%</b><small>risparmio</small></div>
+    </div>
+    <div class="verdetto" id="verdetto2"></div>
+  </section>
+
+  <section>
+    <h2>Impostazioni</h2>
+    <div class="riga">
+      <div><label for="prezzo">Prezzo $ per milione di token in ingresso</label><input type="number" id="prezzo" value="5" step="0.5"></div>
+      <div><label for="cpt">Caratteri per token</label><input type="number" id="cpt" value="3.6" step="0.1"></div>
+    </div>
+    <p class="sotto" style="margin:12px 0 0;font-size:13px">Modello di calcolo: il contenuto entra una volta in cache (1,25 volte il prezzo) e poi viene riletto a ogni messaggio a circa un decimo. A cache scaduta si riscrive tutto. Le cifre sono stime per decidere, non una fattura. In abbonamento non paghi in dollari ma in limiti raggiunti prima.</p>
+  </section>
+
+  <footer>🪙 <a href="https://github.com/Giandoms/freetoken">FreeToken</a>: gratis per ChatGPT, Claude e Claude Code · un progetto di <a href="https://www.giandosantamaria.it">Giando Santamaria</a>, il Facilitatore IA delle PMI</footer>
+</main>
+<script>
+  const $ = id => document.getElementById(id);
+  const f = n => Math.round(n).toLocaleString('it-IT');
+  const SCR = 1.25, LET = 0.1;
+  function calcola() {
+    const cpt = parseFloat($('cpt').value) || 3.6, prezzo = parseFloat($('prezzo').value) || 0;
+    const t = $('testo').value.length / cpt, dopo = +$('dopo').value;
+    $('dopoVal').textContent = dopo;
+    const peso = t * SCR + t * LET * dopo;
+    $('tok').textContent = f(t); $('peso').textContent = f(peso);
+    $('soldi').textContent = (peso / 1e6 * prezzo).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+    const righe = $('testo').value ? $('testo').value.split('\n').length : 0;
+    let v = 'Incolla qualcosa per vedere il verdetto.';
+    if (t > 0 && t < 2000) v = 'Leggero. Mandalo pure.';
+    else if (t >= 2000 && t < 6000) v = `Medio (${f(righe)} righe). Va bene se ti serve tutto. Se è un log, bastano le ultime 30 righe.`;
+    else if (t >= 6000) v = `Pesante: ${f(righe)} righe che rimangono in ogni risposta. Manda solo la parte utile: con le ultime 30 righe peseresti circa ${f(Math.min(t, 30 * t / Math.max(righe,1)))} token.`;
+    $('verdetto1').textContent = v;
+
+    const chat = +$('chat').value || 0, msg = +$('msg').value || 0, nota = (+$('nota').value || 0) * 20;
+    const pausa = $('pausa').checked;
+    // tieni: se cache scaduta prima riscrittura completa, poi letture; ogni messaggio aggiunge ~1.500 token
+    const cresce = 1500;
+    // riparti: scrivere la nota costa una rilettura della chat (a cache calda) più la nota in uscita (5 volte);
+    // dopo una pausa la nota la scrivi tu in 5 righe, quindi costa zero
+    let tieni = (pausa ? chat * SCR : 0), riparti = nota * SCR + (pausa ? 0 : chat * LET + nota * 5);
+    for (let i = 0; i < msg; i++) { tieni += (chat + i * cresce) * LET + cresce * SCR; riparti += (nota + i * cresce) * LET + cresce * SCR; }
+    $('tieni').textContent = f(tieni); $('riparti').textContent = f(riparti);
+    const r = tieni > 0 ? Math.max(0, 1 - riparti / tieni) : 0;
+    $('risp').textContent = Math.round(r * 100) + '%';
+    $('verdetto2').textContent = r > 0.3
+      ? `Riparti dalla nota: risparmi circa ${f(tieni - riparti)} token equivalenti, e l'IA ragiona su 20 righe chiare invece che su una chat confusa.`
+      : 'Qui tenere la chat conviene ancora: è leggera o ti mancano pochi messaggi. Vale solo se stai facendo lo stesso lavoro.';
+  }
+  document.querySelectorAll('input,textarea').forEach(e => e.addEventListener('input', calcola));
+  calcola();
+</script>
+</body>
+</html>

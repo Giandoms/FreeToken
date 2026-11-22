@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300">
+  <rect width="1200" height="300" fill="#f6f1e7"/>
+  <g font-family="Menlo, Consolas, monospace">
+    <text x="40" y="50" font-family="Helvetica, Arial, sans-serif" font-size="22" letter-spacing="3" fill="#6b645a">CLAUDE CODE · LA BARRA IN BASSO</text>
+    <rect x="40" y="76" width="1120" height="190" rx="14" fill="#141414"/>
+    <text x="70" y="126" font-size="21" fill="#f6f1e7">T  <tspan fill="#e0b400">███████░░░ 70%</tspan>  <tspan fill="#9a9a9a">⏳ sconto ancora 3:12</tspan>  <tspan fill="#9a9a9a">sessione 1.84 $</tspan>  <tspan fill="#3ccf6e">risparmiati 412k</tspan></text>
+    <text x="70" y="176" font-size="21" fill="#f6f1e7">T  <tspan fill="#e0b400">███████░░░ 70%</tspan>  <tspan fill="#ff5a4a">sconto scaduto: il prossimo msg costa tutto → /clear + /riparti</tspan></text>
+    <text x="70" y="226" font-size="21" fill="#f6f1e7">T  <tspan fill="#3ccf6e">████░░░░░░ 42%</tspan>  <tspan fill="#e0b400">⚠ sconto perso: app collegate cambiate</tspan></text>
+  </g>
+</svg>
