@@ -37,7 +37,7 @@ claude["description"] = ("Ti avvisa quando la chat con l'IA consuma troppo e ti 
 (DEST / ".claude-plugin" / "plugin.json").write_text(json.dumps(claude, indent=2, ensure_ascii=False), encoding="utf-8")
 shutil.copy2(FONTE / "plugin.json", DEST / "plugin.json")
 (DEST / ".codex-plugin").mkdir(exist_ok=True)
-shutil.copy2(FONTE / "plugin.json", DEST / ".codex-plugin" / "plugin.json")
+shutil.copy2(FONTE / ".codex-plugin" / "plugin.json", DEST / ".codex-plugin" / "plugin.json")
 
 readme = (FONTE / "README.md").read_text(encoding="utf-8")
 inizio = readme.index("## Cosa esegue e cosa tocca (trasparenza)")

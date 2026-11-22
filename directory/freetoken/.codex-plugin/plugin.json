@@ -1,7 +1,7 @@
 {
   "name": "freetoken",
   "version": "1.2.0",
-  "description": "Ti avvisa quando la chat con l'IA consuma troppo e ti dice cosa fare: semaforo, Passaggio per ripartire leggero, calcolatore. Gratis, in italiano.",
+  "description": "Ti avvisa quando la chat con l'IA consuma troppo e ti dice cosa fare.",
   "author": {
     "name": "Giando Santamaria",
     "url": "https://www.giandosantamaria.it"
@@ -17,20 +17,34 @@
     "chat",
     "italiano"
   ],
-  "extensions": {
-    "com.openai": {
-      "interface": {
-        "displayName": "FreeToken",
-        "category": "Productivity",
-        "defaultPrompt": "quanto",
-        "logo": "./assets/logo.png",
-        "composerIcon": "./assets/icona.png",
-        "brandColor": "#FF6A13",
-        "websiteURL": "https://github.com/Giandoms/FreeToken",
-        "supportURL": "https://github.com/Giandoms/FreeToken/issues",
-        "privacyPolicyURL": "https://giandoms.github.io/FreeToken/privacy.html",
-        "termsOfServiceURL": "https://giandoms.github.io/FreeToken/termini.html"
-      }
-    }
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "FreeToken",
+    "shortDescription": "Avvisa quando la chat consuma",
+    "longDescription": "FreeToken ti avvisa quando la conversazione con l'IA consuma troppo e ti dice cosa fare. È in italiano ed è pensato per imprenditori, professionisti e team che usano ChatGPT e Codex ogni giorno.\n\nCome funziona: a ogni messaggio l'IA rilegge tutta la conversazione. Più la chat è lunga e piena di testi incollati, più ogni risposta consuma e più aumentano gli errori. FreeToken se ne accorge da solo e aggiunge in fondo alla risposta un avviso a semaforo in tre righe: cosa succede, perché ti costa, cosa fare.\n\nIl semaforo: giallo quando la chat inizia a pesare, arancione quando conviene ripartire, rosso quando è il momento di cambiare chat. Al rosso scrive già il Passaggio: dieci righe con obiettivo, decisioni, materiali e prossimo passo, da incollare in una chat nuova per ripartire leggeri senza perdere niente.\n\nAvvisa anche quando incolli testi o registri enormi, quando chiedi di rifare tutto per una piccola modifica, quando correggi un errore invece di modificare il messaggio precedente, e quando crei un lavoro ricorrente che consumerebbe anche senza niente da fare. Se va tutto bene, non dice niente.\n\nParole utili: nota (il Passaggio), quanto (il colore della chat), comprimi (accorcia un testo senza perdere dati), dieta (alleggerisce le istruzioni personalizzate), pagella (voto a come usi l'IA), preventivo (come dividere un lavoro grande), calcolatore, regole.\n\nLimiti: l'IA non vede il contatore reale dei consumi, quindi le cifre degli avvisi sono stime. La skill la attiva il modello quando riconosce i segnali. FreeToken è solo testo: non esegue codice, non raccoglie dati e non si collega a servizi esterni.\n\nGratuito e open source, licenza MIT. Creato da Giando Santamaria.",
+    "developerName": "Giando Santamaria",
+    "category": "Productivity",
+    "capabilities": [
+      "Avvisa con un semaforo quando la conversazione diventa lunga o costosa",
+      "Spiega in tre righe cosa succede, perché costa e cosa fare",
+      "Scrive il Passaggio per ripartire in una chat nuova senza perdere il lavoro",
+      "Segnala testi e registri troppo lunghi incollati in chat",
+      "Suggerisce modifiche mirate invece di riscrivere file interi",
+      "Ricorda di far partire i lavori ricorrenti solo quando c'è qualcosa di nuovo",
+      "Comprime testi e istruzioni personalizzate mantenendo numeri, nomi e scadenze",
+      "Valuta come usi l'IA e indica le tre correzioni più utili"
+    ],
+    "defaultPrompt": [
+      "quanto",
+      "nota",
+      "pagella: uso ChatGPT tutto il giorno nella stessa chat"
+    ],
+    "brandColor": "#FF6A13",
+    "websiteURL": "https://github.com/Giandoms/FreeToken",
+    "supportURL": "https://github.com/Giandoms/FreeToken/issues",
+    "privacyPolicyURL": "https://giandoms.github.io/FreeToken/privacy.html",
+    "termsOfServiceURL": "https://giandoms.github.io/FreeToken/termini.html",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/icona.png"
   }
 }
