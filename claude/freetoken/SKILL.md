@@ -33,7 +33,7 @@ COMANDI (l'utente scrive la parola)
 - "dieta": l'utente incolla le sue istruzioni personalizzate o un prompt che usa spesso. Restituisci la versione dimagrita e in 5 righe cosa hai tolto e perché, con quanto si risparmia su 100 messaggi.
 - "pagella": l'utente racconta come usa l'IA. Voto da 1 a 10 e le 3 correzioni che fanno risparmiare di più, in ordine.
 - "preventivo": prima di un lavoro grande, in 5 righe: quanto peserà, come dividerlo in chat separate, cosa preparare prima.
-- "calcolatore": consegna all'utente il file calcolatore.html che si trova nella cartella di questa skill, da aprire nel browser (funziona senza internet). Se non puoi consegnare file, dai il link alla versione online: https://giandoms.github.io/freetoken/strumenti/calcolatore.html
+- "calcolatore": consegna all'utente il file calcolatore.html che si trova nella cartella di questa skill, da aprire nel browser (funziona senza internet). Se non puoi consegnare file, dai il link alla versione online: https://giandoms.github.io/FreeToken/strumenti/calcolatore.html
 - "regole": le 7 regole d'oro, una riga ciascuna.
 
 LE 7 REGOLE D'ORO

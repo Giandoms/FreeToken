@@ -4,7 +4,7 @@
 
 **La tua IA ti avvisa quando stai consumando troppo. E ti dice cosa fare.**
 
-**[▶ Prova subito il calcolatore gratuito](https://giandoms.github.io/freetoken/strumenti/calcolatore.html)** · nessuna registrazione, funziona nel browser
+**[▶ Prova subito il calcolatore gratuito](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)** · nessuna registrazione, funziona nel browser
 
 Funziona su **ChatGPT**, **Claude** (chat, app e Cowork) e **Claude Code**. Gratis, in italiano, senza installare niente sulle chat.
 
@@ -74,7 +74,7 @@ Vuoi capire il perché di ognuna, con esempi prima e dopo? Leggi **[le 23 strate
 
 ## Il calcolatore gratuito
 
-**[Aprilo online](https://giandoms.github.io/freetoken/strumenti/calcolatore.html)**, oppure apri [`strumenti/calcolatore.html`](strumenti/calcolatore.html) dalla cartella scaricata. Chi installa FreeToken lo ha già: nella skill (scrivi `calcolatore`) e in Claude Code (`python3 claude-code/scripts/freetoken.py calcolatore`). Incolli un testo e vedi quanto ti costa tenerlo nella chat, e se ti conviene continuare o ripartire dalla nota. Funziona senza internet, niente esce dal tuo computer.
+**[Aprilo online](https://giandoms.github.io/FreeToken/strumenti/calcolatore.html)**, oppure apri [`strumenti/calcolatore.html`](strumenti/calcolatore.html) dalla cartella scaricata. Chi installa FreeToken lo ha già: nella skill (scrivi `calcolatore`) e in Claude Code (`python3 claude-code/scripts/freetoken.py calcolatore`). Incolli un testo e vedi quanto ti costa tenerlo nella chat, e se ti conviene continuare o ripartire dalla nota. Funziona senza internet, niente esce dal tuo computer.
 
 ---
 
@@ -83,8 +83,8 @@ Vuoi capire il perché di ognuna, con esempi prima e dopo? Leggi **[le 23 strate
 Qui FreeToken non si limita ad avvisare: legge i consumi veri, ferma gli sprechi prima che succedano e ti fa il conto di quanto hai risparmiato.
 
 ```bash
-git clone https://github.com/Giandoms/freetoken.git
-cd freetoken
+git clone https://github.com/Giandoms/FreeToken.git
+cd FreeToken
 python3 claude-code/install.py
 ```
 

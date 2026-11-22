@@ -750,7 +750,7 @@ def cmd_calcolatore(args):
     locale = DATI / "calcolatore.html"
     if not locale.exists():
         locale = QUI.parent.parent / "strumenti" / "calcolatore.html"
-    print(f"Calcolatore: {locale}\nVersione online: https://giandoms.github.io/freetoken/strumenti/calcolatore.html" )
+    print(f"Calcolatore: {locale}\nVersione online: https://giandoms.github.io/FreeToken/strumenti/calcolatore.html" )
     webbrowser.open(locale.resolve().as_uri())
 
 
